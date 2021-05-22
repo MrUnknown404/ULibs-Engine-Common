@@ -23,11 +23,12 @@ abstract class CommonBase implements Runnable {
 	private final List<IRenderer> renderers = new ArrayList<IRenderer>();
 	
 	//TODO document
-	protected CommonBase(String title, String internalTitle, boolean isDebug) {
+	protected CommonBase(String title, String internalTitle, boolean isDebug, WarningType[] warnings) {
 		CommonBase.isDebug = isDebug;
 		CommonBase.title = title;
 		CommonBase.internalTitle = internalTitle;
 		
+		Console.disabledTypes = warnings;
 		Thread.currentThread().setName("Common");
 		Console.setupLogFile(new File(JAR_LOCATION + "\\Logs"), 5);
 		Console.getTimeExample();

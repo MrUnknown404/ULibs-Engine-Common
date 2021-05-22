@@ -1,11 +1,7 @@
 package main.java.ulibs.engine;
 
 import org.lwjgl.glfw.GLFW;
-import org.lwjgl.glfw.GLFWCharCallbackI;
 import org.lwjgl.glfw.GLFWCursorPosCallbackI;
-import org.lwjgl.glfw.GLFWKeyCallbackI;
-import org.lwjgl.glfw.GLFWMouseButtonCallbackI;
-import org.lwjgl.glfw.GLFWScrollCallbackI;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.glfw.GLFWWindowPosCallbackI;
 import org.lwjgl.glfw.GLFWWindowSizeCallbackI;
@@ -17,16 +13,15 @@ import main.java.ulibs.common.utils.Console;
 import main.java.ulibs.common.utils.Console.WarningType;
 import main.java.ulibs.engine.init.Shaders;
 import main.java.ulibs.engine.input.InputCursor;
+import main.java.ulibs.engine.input.InputHolder;
 import main.java.ulibs.engine.render.ScreenLoading;
 import main.java.ulibs.engine.utils.EnumScreenTearFix;
 
 public abstract class ClientBase extends CommonBase {
 	private static int hudWidth, hudHeight;
-	private static GLFWKeyCallbackI keyInput;
-	private static GLFWCharCallbackI charInput;
-	private static GLFWMouseButtonCallbackI mouseInput;
+	
+	private static InputHolder inputHolder;
 	private static GLFWCursorPosCallbackI cursorInput;
-	private static GLFWScrollCallbackI scrollInput;
 	
 	private static int aspectWidth, aspectHeight, aspectX, aspectY;
 	private static float xScale = 1, yScale = 1;
@@ -41,17 +36,13 @@ public abstract class ClientBase extends CommonBase {
 	
 	//TODO make this take in a input holder class with a builder
 	
-	protected ClientBase(String title, String internalTitle, int hudWidth, int hudHeight, GLFWKeyCallbackI keyInput, GLFWCharCallbackI charInput,
-			GLFWMouseButtonCallbackI mouseInput, GLFWScrollCallbackI scrollInput, boolean isDebug) {
-		super(title, internalTitle, isDebug);
+	protected ClientBase(String title, String internalTitle, int hudWidth, int hudHeight, InputHolder inputHolder, boolean isDebug, WarningType[] warnings) {
+		super(title, internalTitle, isDebug, warnings);
 		
 		ClientBase.hudWidth = hudWidth;
 		ClientBase.hudHeight = hudHeight;
-		ClientBase.keyInput = keyInput;
-		ClientBase.charInput = charInput;
-		ClientBase.mouseInput = mouseInput;
+		ClientBase.inputHolder = inputHolder;
 		ClientBase.cursorInput = new InputCursor();
-		ClientBase.scrollInput = scrollInput;
 		
 		ClientBase.aspectWidth = hudWidth;
 		ClientBase.aspectHeight = hudHeight;
@@ -119,20 +110,20 @@ public abstract class ClientBase extends CommonBase {
 		
 		GLFW.glfwSetWindowPos(window, windowX, windowY);
 		
-		if (keyInput != null) {
-			GLFW.glfwSetKeyCallback(window, keyInput);
+		if (inputHolder.getKeyInput() != null) {
+			GLFW.glfwSetKeyCallback(window, inputHolder.getKeyInput());
 		}
-		if (charInput != null) {
-			GLFW.glfwSetCharCallback(window, charInput);
+		if (inputHolder.getCharInput() != null) {
+			GLFW.glfwSetCharCallback(window, inputHolder.getCharInput());
 		}
-		if (mouseInput != null) {
-			GLFW.glfwSetMouseButtonCallback(window, mouseInput);
+		if (inputHolder.getMouseInput() != null) {
+			GLFW.glfwSetMouseButtonCallback(window, inputHolder.getMouseInput());
+		}
+		if (inputHolder.getScrollInput() != null) {
+			GLFW.glfwSetScrollCallback(window, inputHolder.getScrollInput());
 		}
 		if (cursorInput != null) {
 			GLFW.glfwSetCursorPosCallback(window, cursorInput);
-		}
-		if (scrollInput != null) {
-			GLFW.glfwSetScrollCallback(window, scrollInput);
 		}
 		
 		GLFW.glfwSetWindowPosCallback(window, new GLFWWindowPosCallbackI() {
