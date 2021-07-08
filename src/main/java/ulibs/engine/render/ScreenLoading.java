@@ -2,13 +2,12 @@ package main.java.ulibs.engine.render;
 
 import java.awt.image.BufferedImage;
 
-import org.lwjgl.opengl.GL46;
-
 import main.java.ulibs.common.utils.Console;
 import main.java.ulibs.common.utils.Console.WarningType;
 import main.java.ulibs.engine.ClientBase;
 import main.java.ulibs.engine.init.Shaders;
 import main.java.ulibs.engine.utils.GetResource;
+import main.java.ulibs.gl.gl.GLH;
 import main.java.ulibs.gl.gl.QuadData;
 import main.java.ulibs.gl.gl.Texture;
 import main.java.ulibs.gl.gl.VertexArray;
@@ -32,8 +31,8 @@ public class ScreenLoading implements IRenderer {
 		va.bind();
 		va.draw();
 		va.unbind();
-		GL46.glBindTexture(GL46.GL_TEXTURE_2D, 0);
-		Shaders.unbind();
+		GLH.unbindTexture();
+		GLH.unbindShader();
 	}
 	
 	private static BufferedImage getTexture(String folder, String name) {

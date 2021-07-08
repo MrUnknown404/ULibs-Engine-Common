@@ -1,12 +1,12 @@
 package main.java.ulibs.engine;
 
+import java.awt.Color;
+
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWCursorPosCallbackI;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.glfw.GLFWWindowPosCallbackI;
 import org.lwjgl.glfw.GLFWWindowSizeCallbackI;
-import org.lwjgl.opengl.GL;
-import org.lwjgl.opengl.GL46;
 import org.lwjgl.system.MemoryUtil;
 
 import main.java.ulibs.common.utils.Console;
@@ -16,6 +16,9 @@ import main.java.ulibs.engine.input.InputCursor;
 import main.java.ulibs.engine.input.InputHolder;
 import main.java.ulibs.engine.render.ScreenLoading;
 import main.java.ulibs.engine.utils.EnumScreenTearFix;
+import main.java.ulibs.gl.gl.GLH;
+import main.java.ulibs.gl.utils.exceptions.GLException;
+import main.java.ulibs.gl.utils.exceptions.GLException.Reason;
 
 public abstract class ClientBase extends CommonBase {
 	private static int hudWidth, hudHeight;
@@ -59,12 +62,12 @@ public abstract class ClientBase extends CommonBase {
 	
 	@Override
 	protected void renderWrap() {
-		int err = GL46.glGetError();
-		if (err != GL46.GL_NO_ERROR) {
+		int err = GLH.getError();
+		if (GLH.isError(err)) {
 			Console.print(WarningType.Error, "OpenGL Error: " + err);
 		}
 		
-		GL46.glClear(GL46.GL_COLOR_BUFFER_BIT | GL46.GL_DEPTH_BUFFER_BIT);
+		GLH.clearColorDepthBuffer();
 		
 		if (!isLoading()) {
 			render();
@@ -83,14 +86,14 @@ public abstract class ClientBase extends CommonBase {
 		Console.print(WarningType.Info, "OpenGL setup started...");
 		
 		if (!GLFW.glfwInit()) {
-			Console.print(WarningType.FatalError, "Failed to initialize OpenGL!", true);
+			Console.print(WarningType.FatalError, "Failed to initialize OpenGL!", new GLException(Reason.failedToInitGL));
 			return;
 		}
 		
-		GLFW.glfwWindowHint(GLFW.GLFW_RESIZABLE, GL46.GL_TRUE);
+		GLFW.glfwWindowHint(GLFW.GLFW_RESIZABLE, GLH.TRUE);
 		GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MAJOR, 3);
 		GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MINOR, 2);
-		GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_FORWARD_COMPAT, GL46.GL_TRUE);
+		GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_FORWARD_COMPAT, GLH.TRUE);
 		GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_PROFILE, GLFW.GLFW_OPENGL_CORE_PROFILE);
 		
 		GLFWVidMode v = GLFW.glfwGetVideoMode(GLFW.glfwGetPrimaryMonitor());
@@ -101,7 +104,7 @@ public abstract class ClientBase extends CommonBase {
 		
 		window = GLFW.glfwCreateWindow(getHudWidth(), getHudHeight(), title, MemoryUtil.NULL, MemoryUtil.NULL);
 		if (window == MemoryUtil.NULL) {
-			Console.print(WarningType.FatalError, "Failed to initialize Window!", true);
+			Console.print(WarningType.FatalError, "Failed to initialize Window!", new GLException(Reason.failedToInitWindow));
 			return;
 		}
 		
@@ -151,7 +154,7 @@ public abstract class ClientBase extends CommonBase {
 				xScale = 1 + (float) (aspectWidth - getHudWidth()) / getHudWidth();
 				
 				InputCursor.updateValues();
-				GL46.glViewport(aspectX, aspectY, aspectWidth, aspectHeight);
+				GLH.setViewport(aspectX, aspectY, aspectWidth, aspectHeight);
 			}
 		});
 		
@@ -159,17 +162,16 @@ public abstract class ClientBase extends CommonBase {
 		GLFW.glfwMakeContextCurrent(window);
 		GLFW.glfwShowWindow(window);
 		
-		GL.createCapabilities();
+		GLH.createCapabilities();
 		
-		GL46.glClearColor(0.075f, 0.075f, 0.075f, 1);
-		GL46.glEnable(GL46.GL_DEPTH_TEST);
-		GL46.glEnable(GL46.GL_BLEND);
-		GL46.glBlendFunc(GL46.GL_SRC_ALPHA, GL46.GL_ONE_MINUS_SRC_ALPHA);
-		GL46.glActiveTexture(GL46.GL_TEXTURE0);
+		GLH.clearColor(new Color(20,20,20, 1));
+		GLH.enableDepth();
+		GLH.enableBlend();
+		GLH.setActiveTexture0();
 		
 		Shaders.registerAll();
 		
-		Console.print(WarningType.Info, "OpenGL setup finished! Running OpenGL version: " + GL46.glGetString(GL46.GL_VERSION) + "!");
+		Console.print(WarningType.Info, "OpenGL setup finished! Running OpenGL version: " + GLH.getVersion() + "!");
 	}
 	
 	public static void toggleFullScreen() {

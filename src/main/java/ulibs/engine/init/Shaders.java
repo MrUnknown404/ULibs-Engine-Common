@@ -3,8 +3,6 @@ package main.java.ulibs.engine.init;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.lwjgl.opengl.GL46;
-
 import main.java.ulibs.common.utils.Console;
 import main.java.ulibs.common.utils.Console.WarningType;
 import main.java.ulibs.engine.ClientBase;
@@ -40,10 +38,6 @@ public class Shaders {
 		ALL.add(s);
 		Console.print(Console.WarningType.RegisterDebug, "'" + s.name + "' was registered!");
 		return s;
-	}
-	
-	public static void unbind() {
-		GL46.glUseProgram(0);
 	}
 	
 	public static Shader MoveableObject() {
