@@ -1,14 +1,11 @@
 package main.java.ulibs.engine;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.lwjgl.glfw.GLFW;
 
 import main.java.ulibs.common.utils.Console;
 import main.java.ulibs.common.utils.Console.WarningType;
-import main.java.ulibs.engine.render.IRenderer;
 
 abstract class CommonBase implements Runnable {
 	private static boolean isDebug;
@@ -18,19 +15,17 @@ abstract class CommonBase implements Runnable {
 	
 	private static int fps;
 	private static boolean running = false, isLoading;
-	private static Thread gameThread;
-	
-	private final List<IRenderer> renderers = new ArrayList<IRenderer>();
+	private static  Thread gameThread;
 	
 	//TODO document
-	protected CommonBase(String title, String internalTitle, boolean isDebug, WarningType[] warnings) {
+	protected CommonBase(String title, String internalTitle, boolean isDebug, int logCount, WarningType[] warnings) {
 		CommonBase.isDebug = isDebug;
 		CommonBase.title = title;
 		CommonBase.internalTitle = internalTitle;
 		
 		Console.disabledTypes = warnings;
 		Thread.currentThread().setName("Common");
-		Console.setupLogFile(new File(JAR_LOCATION + "\\Logs"), 5);
+		Console.setupLogFile(new File(JAR_LOCATION + "\\Logs"), logCount);
 		Console.getTimeExample();
 		Console.print(WarningType.Info, "Welcome to " + title + "!");
 		Console.print(WarningType.Debug, "Jar Location is -> '" + JAR_LOCATION + "'");
@@ -59,10 +54,16 @@ abstract class CommonBase implements Runnable {
 	protected abstract void preInit();
 	
 	//TODO document
+	protected abstract void rendererSetup();
+	
+	//TODO document
 	protected abstract void init();
 	
 	//TODO document
 	protected abstract void postInit();
+	
+	//TODO document
+	protected abstract void tickWrap();
 	
 	//TODO document
 	protected abstract void tick();
@@ -81,16 +82,8 @@ abstract class CommonBase implements Runnable {
 	
 	private void initWrap() {
 		Console.print(WarningType.Info, "Initialization started...");
-		
+		rendererSetup();
 		init();
-		
-		Console.print(Console.WarningType.Info, "Starting setting up IRenderers!");
-		for (IRenderer r : renderers) {
-			Console.print(Console.WarningType.Debug, "Starting setting up IRenderer " + r.getClass().getSimpleName() + "...");
-			r.setupGL();
-			Console.print(Console.WarningType.Debug, "Finished setting up IRenderer " + r.getClass().getSimpleName() + "!");
-		}
-		
 		Console.print(WarningType.Info, "Initialization finished!");
 	}
 	
@@ -100,19 +93,12 @@ abstract class CommonBase implements Runnable {
 		Console.print(WarningType.Info, "Post-Initialization finished!");
 	}
 	
-	//TODO document
-	protected void render() {
-		for (IRenderer r : renderers) {
-			r.renderAll();
-		}
-	}
-	
 	@Override
-	public void run() {
+	public final void run() {
 		preRun();
 		isLoading = true;
 		
-		Console.print(WarningType.Info, "Started "+ gameThread.getName() + "'s run loop!");
+		Console.print(WarningType.Info, "Started " + gameThread.getName() + "'s run loop!");
 		
 		long lastTime = System.nanoTime(), timer = System.currentTimeMillis();
 		double amountOfTicks = 60.0, ns = 1000000000 / amountOfTicks, delta = 0;
@@ -134,7 +120,7 @@ abstract class CommonBase implements Runnable {
 			
 			while (delta >= 1) {
 				if (!isLoading) {
-					tick();
+					tickWrap();
 				}
 				delta--;
 			}
@@ -159,43 +145,32 @@ abstract class CommonBase implements Runnable {
 	}
 	
 	//TODO document
-	protected void addRenderer(IRenderer r) {
-		renderers.add(r);
-		Console.print(WarningType.RegisterDebug, "Registered '" + r.getClass().getSimpleName() + "' as a renderer!");
-	}
-	
-	//TODO document
-	protected List<IRenderer> getRenderers() {
-		return renderers;
-	}
-	
-	//TODO document
-	public static boolean isDebug() {
+	public static final boolean isDebug() {
 		return isDebug;
 	}
 	
 	//TODO document
-	public static boolean isLoading() {
+	public static final boolean isLoading() {
 		return isLoading;
 	}
 	
 	//TODO document
-	public static boolean isRunning() {
+	public static final boolean isRunning() {
 		return running;
 	}
 	
 	//TODO document
-	public static String getJarLocation() {
+	public static final String getJarLocation() {
 		return JAR_LOCATION;
 	}
 	
 	//TODO document
-	public static String getAssetLocation() {
+	public static final String getAssetLocation() {
 		return "/main/resources/" + internalTitle + "/assets/";
 	}
 	
 	//TODO document
-	public static int getFPS() {
+	public static final int getFPS() {
 		return fps;
 	}
 }

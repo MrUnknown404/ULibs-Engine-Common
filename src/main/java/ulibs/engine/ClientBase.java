@@ -1,6 +1,8 @@
 package main.java.ulibs.engine;
 
 import java.awt.Color;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWCursorPosCallbackI;
@@ -14,8 +16,10 @@ import main.java.ulibs.common.utils.Console.WarningType;
 import main.java.ulibs.engine.init.Shaders;
 import main.java.ulibs.engine.input.InputCursor;
 import main.java.ulibs.engine.input.InputHolder;
+import main.java.ulibs.engine.render.IRenderer;
 import main.java.ulibs.engine.render.ScreenLoading;
 import main.java.ulibs.engine.utils.EnumScreenTearFix;
+import main.java.ulibs.engine.utils.ITickable;
 import main.java.ulibs.gl.gl.GLH;
 import main.java.ulibs.gl.utils.exceptions.GLException;
 import main.java.ulibs.gl.utils.exceptions.GLException.Reason;
@@ -37,10 +41,12 @@ public abstract class ClientBase extends CommonBase {
 	
 	private static EnumScreenTearFix screenFix = EnumScreenTearFix.vsync;
 	
+	private final List<IRenderer> renderers = new ArrayList<IRenderer>();
+	
 	//TODO make this take in a input holder class with a builder
 	
-	protected ClientBase(String title, String internalTitle, int hudWidth, int hudHeight, InputHolder inputHolder, boolean isDebug, WarningType[] warnings) {
-		super(title, internalTitle, isDebug, warnings);
+	protected ClientBase(String title, String internalTitle, int hudWidth, int hudHeight, InputHolder inputHolder, boolean isDebug, int logCount, WarningType[] warnings) {
+		super(title, internalTitle, isDebug, logCount, warnings);
 		
 		ClientBase.hudWidth = hudWidth;
 		ClientBase.hudHeight = hudHeight;
@@ -54,14 +60,14 @@ public abstract class ClientBase extends CommonBase {
 	}
 	
 	@Override
-	protected void preRun() {
+	protected final void preRun() {
 		glSetup();
 		loadingScreen = new ScreenLoading();
 		loadingScreen.setupGL();
 	}
 	
 	@Override
-	protected void renderWrap() {
+	protected final void renderWrap() {
 		int err = GLH.getError();
 		if (GLH.isError(err)) {
 			Console.print(WarningType.Error, "OpenGL Error: " + err);
@@ -72,17 +78,50 @@ public abstract class ClientBase extends CommonBase {
 		if (!isLoading()) {
 			render();
 		} else {
-			loadingRender();
+			renderLoadingScreen();
 		}
 		
 		GLFW.glfwSwapBuffers(window);
 	}
 	
-	protected void loadingRender() {
+	@Override
+	protected final void rendererSetup() {
+		for (IRenderer r : renderers) {
+			r.setupGL();
+		}
+	}
+	
+	@Override
+	protected final void tickWrap() {
+		for (IRenderer r : renderers) {
+			if (r instanceof ITickable) {
+				((ITickable) r).tick();
+			}
+		}
+		
+		tick();
+	}
+	
+	protected void render() {
+		for (IRenderer r : renderers) {
+			r.renderAll();
+		}
+	}
+	
+	protected final void addRenderer(IRenderer r) {
+		renderers.add(r);
+		Console.print(WarningType.RegisterDebug, "Registered '" + r.getClass().getSimpleName() + "' as a renderer!");
+	}
+	
+	protected final List<IRenderer> getRenderers() {
+		return renderers;
+	}
+	
+	protected void renderLoadingScreen() {
 		loadingScreen.renderAll();
 	}
 	
-	private void glSetup() {
+	private final void glSetup() {
 		Console.print(WarningType.Info, "OpenGL setup started...");
 		
 		if (!GLFW.glfwInit()) {
@@ -164,7 +203,7 @@ public abstract class ClientBase extends CommonBase {
 		
 		GLH.createCapabilities();
 		
-		GLH.clearColor(new Color(20,20,20, 1));
+		GLH.clearColor(new Color(20, 20, 20, 1));
 		GLH.enableDepth();
 		GLH.enableBlend();
 		GLH.setActiveTexture0();
@@ -174,13 +213,13 @@ public abstract class ClientBase extends CommonBase {
 		Console.print(WarningType.Info, "OpenGL setup finished! Running OpenGL version: " + GLH.getVersion() + "!");
 	}
 	
-	public static void toggleFullScreen() {
+	public static final void toggleFullScreen() {
 		Console.print(WarningType.Debug, "Toggling Fullscreen!");
 		isFullscreen = !isFullscreen;
 		refreshFullscreen();
 	}
 	
-	public static void refreshFullscreen() {
+	public static final void refreshFullscreen() {
 		GLFWVidMode v = GLFW.glfwGetVideoMode(GLFW.glfwGetPrimaryMonitor());
 		if (isFullscreen) {
 			lastWidth = (aspectX * 2) + aspectWidth;
@@ -211,39 +250,39 @@ public abstract class ClientBase extends CommonBase {
 	}
 	
 	@Override
-	protected boolean shouldClose() {
+	protected final boolean shouldClose() {
 		return GLFW.glfwWindowShouldClose(window);
 	}
 	
-	public static int getHudWidth() {
+	public static final int getHudWidth() {
 		return hudWidth;
 	}
 	
-	public static int getHudHeight() {
+	public static final int getHudHeight() {
 		return hudHeight;
 	}
 	
-	public static int getViewportX() {
+	public static final int getViewportX() {
 		return aspectX;
 	}
 	
-	public static int getViewportY() {
+	public static final int getViewportY() {
 		return aspectY;
 	}
 	
-	public static int getViewportWidth() {
+	public static final int getViewportWidth() {
 		return aspectWidth;
 	}
 	
-	public static int getViewportHeight() {
+	public static final int getViewportHeight() {
 		return aspectHeight;
 	}
 	
-	public static float getXScale() {
+	public static final float getXScale() {
 		return xScale;
 	}
 	
-	public static float getYScale() {
+	public static final float getYScale() {
 		return yScale;
 	}
 }
