@@ -152,20 +152,22 @@ public abstract class ClientBase extends CommonBase {
 		
 		GLFW.glfwSetWindowPos(window, windowX, windowY);
 		
-		if (inputHolder.getKeyInput() != null) {
-			GLFW.glfwSetKeyCallback(window, inputHolder.getKeyInput());
-		}
-		if (inputHolder.getCharInput() != null) {
-			GLFW.glfwSetCharCallback(window, inputHolder.getCharInput());
-		}
-		if (inputHolder.getMouseInput() != null) {
-			GLFW.glfwSetMouseButtonCallback(window, inputHolder.getMouseInput());
-		}
-		if (inputHolder.getScrollInput() != null) {
-			GLFW.glfwSetScrollCallback(window, inputHolder.getScrollInput());
-		}
-		if (cursorInput != null) {
-			GLFW.glfwSetCursorPosCallback(window, cursorInput);
+		if (inputHolder != null) {
+			if (inputHolder.getKeyInput() != null) {
+				GLFW.glfwSetKeyCallback(window, inputHolder.getKeyInput());
+			}
+			if (inputHolder.getCharInput() != null) {
+				GLFW.glfwSetCharCallback(window, inputHolder.getCharInput());
+			}
+			if (inputHolder.getMouseInput() != null) {
+				GLFW.glfwSetMouseButtonCallback(window, inputHolder.getMouseInput());
+			}
+			if (inputHolder.getScrollInput() != null) {
+				GLFW.glfwSetScrollCallback(window, inputHolder.getScrollInput());
+			}
+			if (cursorInput != null) {
+				GLFW.glfwSetCursorPosCallback(window, cursorInput);
+			}
 		}
 		
 		GLFW.glfwSetWindowPosCallback(window, new GLFWWindowPosCallbackI() {
