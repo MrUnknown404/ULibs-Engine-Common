@@ -92,14 +92,14 @@ public abstract class ClientBase extends CommonBase {
 	}
 	
 	@Override
-	protected final void tickWrap() {
+	protected final void preTick() {
+		tick();
+		
 		for (IRenderer r : renderers) {
 			if (r instanceof ITickable) {
 				((ITickable) r).tick();
 			}
 		}
-		
-		tick();
 	}
 	
 	protected void render() {
@@ -108,11 +108,15 @@ public abstract class ClientBase extends CommonBase {
 		}
 	}
 	
+	/** Adds an {@link IRenderer} to a list allowing automatic handling
+	 * @param r The renderer to add
+	 */
 	protected final void addRenderer(IRenderer r) {
 		renderers.add(r);
 		Console.print(WarningType.RegisterDebug, "Registered '" + r.getClass().getSimpleName() + "' as a renderer!");
 	}
 	
+	/** @return The list of {@link IRenderer}s */
 	protected final List<IRenderer> getRenderers() {
 		return renderers;
 	}

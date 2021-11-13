@@ -1,23 +1,32 @@
 package main.java.ulibs.engine;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.lwjgl.glfw.GLFW;
 
 import main.java.ulibs.common.utils.Console;
 import main.java.ulibs.common.utils.Console.WarningType;
+import main.java.ulibs.engine.utils.IRunnable;
+import main.java.ulibs.engine.utils.Timer;
+import main.java.ulibs.engine.utils.Timer.TimerType;
 
-abstract class CommonBase implements Runnable {
+public abstract class CommonBase implements Runnable {
 	private static boolean isDebug;
-	protected static String title, internalTitle;
+	/** The title to use for the game. IE the text on the top bar */
+	protected static String title;
+	/** The internal title to use for assets. Should be all lowercase! */
+	protected static String internalTitle;
 	
 	private static final String JAR_LOCATION = new File("").getAbsolutePath();
 	
 	private static int fps;
 	private static boolean running = false, isLoading;
-	private static  Thread gameThread;
+	private static Thread gameThread;
 	
-	//TODO document
+	private final List<Timer> timers = new ArrayList<Timer>(), timersToKill = new ArrayList<Timer>();
+	
 	protected CommonBase(String title, String internalTitle, boolean isDebug, int logCount, WarningType[] warnings) {
 		CommonBase.isDebug = isDebug;
 		CommonBase.title = title;
@@ -36,42 +45,46 @@ abstract class CommonBase implements Runnable {
 		running = true;
 	}
 	
-	//TODO document
 	protected void printJarInfo() {
 		Console.print(WarningType.Debug, " - Logs Location -> '\\Logs'");
 	}
 	
-	//TODO document
 	protected void addThreads() {
 		gameThread = new Thread(this, "Client");
 		gameThread.start();
 	}
 	
-	//TODO document
+	public final void addTimer(IRunnable run, TimerType timerType, long time) {
+		switch (timerType) {
+			case minute:
+				time *= 3600;
+				break;
+			case second:
+				time *= 60;
+				break;
+			case tick:
+				break;
+		}
+		
+		timers.add(new Timer(run, timerType, time));
+	}
+	
 	protected abstract void preRun();
 	
-	//TODO document
 	protected abstract void preInit();
 	
-	//TODO document
 	protected abstract void rendererSetup();
 	
-	//TODO document
 	protected abstract void init();
 	
-	//TODO document
 	protected abstract void postInit();
 	
-	//TODO document
-	protected abstract void tickWrap();
+	protected abstract void preTick();
 	
-	//TODO document
 	protected abstract void tick();
 	
-	//TODO document
 	protected abstract void renderWrap();
 	
-	//TODO document
 	protected abstract boolean shouldClose();
 	
 	private void preInitWrap() {
@@ -120,8 +133,25 @@ abstract class CommonBase implements Runnable {
 			
 			while (delta >= 1) {
 				if (!isLoading) {
-					tickWrap();
+					if (!timers.isEmpty()) {
+						for (Timer t : timers) {
+							t.time--;
+							
+							if (t.time <= 0) {
+								timersToKill.add(t);
+								t.runnable.run();
+							}
+						}
+						
+						if (!timersToKill.isEmpty()) {
+							timers.removeAll(timersToKill);
+							timersToKill.clear();
+						}
+					}
+					
+					preTick();
 				}
+				
 				delta--;
 			}
 			
@@ -144,32 +174,32 @@ abstract class CommonBase implements Runnable {
 		}
 	}
 	
-	//TODO document
+	/** @return Whether or not the game is running in Debug mode */
 	public static final boolean isDebug() {
 		return isDebug;
 	}
 	
-	//TODO document
+	/** @return Whether or not the game is current loading */
 	public static final boolean isLoading() {
 		return isLoading;
 	}
 	
-	//TODO document
+	/** @return True of the main {@link Thread} is currently running, otherwise false */
 	public static final boolean isRunning() {
 		return running;
 	}
 	
-	//TODO document
+	/** @return The game's JAR location */
 	public static final String getJarLocation() {
 		return JAR_LOCATION;
 	}
 	
-	//TODO document
+	/** @return The game's internal asset package location. <br> Which should look like "/main/resources/{@link #internalTitle}/assets/" */
 	public static final String getAssetLocation() {
 		return "/main/resources/" + internalTitle + "/assets/";
 	}
 	
-	//TODO document
+	/** @return Returns an integer representing the game's FPS. If this number is lower than 60 problems may occur! */
 	public static final int getFPS() {
 		return fps;
 	}
