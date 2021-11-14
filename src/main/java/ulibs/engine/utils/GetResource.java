@@ -9,7 +9,16 @@ import main.java.ulibs.common.utils.Console;
 import main.java.ulibs.engine.ClientBase;
 
 public class GetResource {
-	public static final BufferedImage nil = getTexture("", "nil");
+	public static final BufferedImage NIL = getNilTexture();
+	
+	private static BufferedImage getNilTexture() {
+		try {
+			return ImageIO.read(GetResource.class.getResourceAsStream("/main/resources/ulibs/engine/assets/textures/nil.png"));
+		} catch (IOException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
 	
 	public static BufferedImage getTexture(String folder, String textureName) {
 		if (!folder.isEmpty() && !folder.endsWith("/")) {
@@ -18,14 +27,14 @@ public class GetResource {
 		
 		if (GetResource.class.getResourceAsStream(ClientBase.getAssetLocation() + "textures/" + folder + textureName + ".png") == null) {
 			Console.print(Console.WarningType.Error, "Cannot find texture : '" + ClientBase.getAssetLocation() + "textures/" + folder + textureName + ".png'");
-			return nil;
+			return NIL;
 		}
 		
 		try {
 			return ImageIO.read(GetResource.class.getResourceAsStream(ClientBase.getAssetLocation() + "textures/" + folder + textureName + ".png"));
 		} catch (IOException e) {
 			e.printStackTrace();
-			return nil;
+			return NIL;
 		}
 	}
 	

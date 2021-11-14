@@ -18,8 +18,7 @@ public class InputCursor extends GLFWCursorPosCallback {
 		
 		float mousePosX = (((float) xpos - viewX) / (viewW / hudW));
 		float mousePosY = (((float) ypos - viewY) / (viewH / hudH));
-		
-		HUD_MOUSE_POS.set((int) mousePosX, (int) mousePosY);
+		HUD_MOUSE_POS.set(Math.round(mousePosX), Math.round(mousePosY));
 	}
 	
 	public static void updateValues() {

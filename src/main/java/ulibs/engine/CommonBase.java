@@ -95,8 +95,8 @@ public abstract class CommonBase implements Runnable {
 	
 	private void initWrap() {
 		Console.print(WarningType.Info, "Initialization started...");
-		rendererSetup();
 		init();
+		rendererSetup();
 		Console.print(WarningType.Info, "Initialization finished!");
 	}
 	

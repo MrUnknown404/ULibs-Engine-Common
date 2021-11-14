@@ -11,6 +11,7 @@ import org.lwjgl.glfw.GLFWWindowPosCallbackI;
 import org.lwjgl.glfw.GLFWWindowSizeCallbackI;
 import org.lwjgl.system.MemoryUtil;
 
+import main.java.ulibs.common.math.Vec2i;
 import main.java.ulibs.common.utils.Console;
 import main.java.ulibs.common.utils.Console.WarningType;
 import main.java.ulibs.engine.init.Shaders;
@@ -21,8 +22,8 @@ import main.java.ulibs.engine.render.ScreenLoading;
 import main.java.ulibs.engine.utils.EnumScreenTearFix;
 import main.java.ulibs.engine.utils.ITickable;
 import main.java.ulibs.gl.gl.GLH;
+import main.java.ulibs.gl.gl.Shader;
 import main.java.ulibs.gl.utils.exceptions.GLException;
-import main.java.ulibs.gl.utils.exceptions.GLException.Reason;
 
 public abstract class ClientBase extends CommonBase {
 	private static int hudWidth, hudHeight;
@@ -42,11 +43,14 @@ public abstract class ClientBase extends CommonBase {
 	private static EnumScreenTearFix screenFix = EnumScreenTearFix.vsync;
 	
 	private final List<IRenderer> renderers = new ArrayList<IRenderer>();
+	private final List<Shader> shadersToSetup;
 	
 	//TODO make this take in a input holder class with a builder
 	
-	protected ClientBase(String title, String internalTitle, int hudWidth, int hudHeight, InputHolder inputHolder, boolean isDebug, int logCount, WarningType[] warnings) {
+	protected ClientBase(String title, String internalTitle, int hudWidth, int hudHeight, InputHolder inputHolder, boolean isDebug, int logCount, WarningType[] warnings,
+			List<Shader> shadersToSetup) {
 		super(title, internalTitle, isDebug, logCount, warnings);
+		this.shadersToSetup = shadersToSetup;
 		
 		ClientBase.hudWidth = hudWidth;
 		ClientBase.hudHeight = hudHeight;
@@ -81,7 +85,7 @@ public abstract class ClientBase extends CommonBase {
 			renderLoadingScreen();
 		}
 		
-		GLFW.glfwSwapBuffers(window);
+		GLH.swapBuffers(window);
 	}
 	
 	@Override
@@ -128,33 +132,24 @@ public abstract class ClientBase extends CommonBase {
 	private final void glSetup() {
 		Console.print(WarningType.Info, "OpenGL setup started...");
 		
-		if (!GLFW.glfwInit()) {
-			Console.print(WarningType.FatalError, "Failed to initialize OpenGL!", new GLException(Reason.failedToInitGL));
+		try {
+			GLH.initGL();
+		} catch (GLException e) {
 			return;
 		}
 		
-		GLFW.glfwWindowHint(GLFW.GLFW_RESIZABLE, GLH.TRUE);
-		GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MAJOR, 3);
-		GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MINOR, 2);
-		GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_FORWARD_COMPAT, GLH.TRUE);
-		GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_PROFILE, GLFW.GLFW_OPENGL_CORE_PROFILE);
+		Vec2i monSize = GLH.setWindowHints(true);
 		
-		GLFWVidMode v = GLFW.glfwGetVideoMode(GLFW.glfwGetPrimaryMonitor());
-		GLFW.glfwWindowHint(GLFW.GLFW_RED_BITS, v.redBits());
-		GLFW.glfwWindowHint(GLFW.GLFW_GREEN_BITS, v.greenBits());
-		GLFW.glfwWindowHint(GLFW.GLFW_BLUE_BITS, v.blueBits());
-		GLFW.glfwWindowHint(GLFW.GLFW_REFRESH_RATE, v.refreshRate());
-		
-		window = GLFW.glfwCreateWindow(getHudWidth(), getHudHeight(), title, MemoryUtil.NULL, MemoryUtil.NULL);
-		if (window == MemoryUtil.NULL) {
-			Console.print(WarningType.FatalError, "Failed to initialize Window!", new GLException(Reason.failedToInitWindow));
+		try {
+			window = GLH.createWindow(title, getHudWidth(), getHudHeight());
+		} catch (GLException e) {
 			return;
 		}
 		
-		windowX = v.width() / 2 - getHudWidth() / 2;
-		windowY = v.height() / 2 - getHudHeight() / 2;
+		windowX = monSize.getX() / 2 - getHudWidth() / 2;
+		windowY = monSize.getY() / 2 - getHudHeight() / 2;
 		
-		GLFW.glfwSetWindowPos(window, windowX, windowY);
+		GLH.setWindowPos(window, windowX, windowY);
 		
 		if (inputHolder != null) {
 			if (inputHolder.getKeyInput() != null) {
@@ -215,6 +210,9 @@ public abstract class ClientBase extends CommonBase {
 		GLH.setActiveTexture0();
 		
 		Shaders.registerAll();
+		for (Shader s : shadersToSetup) {
+			s.setup();
+		}
 		
 		Console.print(WarningType.Info, "OpenGL setup finished! Running OpenGL version: " + GLH.getVersion() + "!");
 	}
@@ -257,7 +255,7 @@ public abstract class ClientBase extends CommonBase {
 	
 	@Override
 	protected final boolean shouldClose() {
-		return GLFW.glfwWindowShouldClose(window);
+		return GLH.shouldWindowClose(window);
 	}
 	
 	public static final int getHudWidth() {

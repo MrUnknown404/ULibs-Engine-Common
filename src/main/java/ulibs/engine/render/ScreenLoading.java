@@ -37,7 +37,7 @@ public class ScreenLoading implements IRenderer {
 	
 	private static BufferedImage getTexture(String folder, String name) {
 		BufferedImage i = GetResource.getTexture(folder, name);
-		Console.print(WarningType.TextureDebug, (i == GetResource.nil ? "Unable to " : "") + "register '" + name + "' for " + ScreenLoading.class.getSimpleName());
+		Console.print(WarningType.TextureDebug, (i == GetResource.NIL ? "Unable to " : "") + "register '" + name + "' for " + ScreenLoading.class.getSimpleName());
 		return i;
 	}
 }
