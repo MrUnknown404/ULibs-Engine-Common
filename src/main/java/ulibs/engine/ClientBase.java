@@ -6,6 +6,9 @@ import java.util.List;
 
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWCursorPosCallbackI;
+import org.lwjgl.glfw.GLFWKeyCallbackI;
+import org.lwjgl.glfw.GLFWMouseButtonCallbackI;
+import org.lwjgl.glfw.GLFWScrollCallbackI;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.glfw.GLFWWindowPosCallbackI;
 import org.lwjgl.glfw.GLFWWindowSizeCallbackI;
@@ -15,8 +18,11 @@ import main.java.ulibs.common.math.Vec2i;
 import main.java.ulibs.common.utils.Console;
 import main.java.ulibs.common.utils.Console.WarningType;
 import main.java.ulibs.engine.init.Shaders;
-import main.java.ulibs.engine.input.InputCursor;
-import main.java.ulibs.engine.input.InputHolder;
+import main.java.ulibs.engine.input.IInputHandler;
+import main.java.ulibs.engine.input.IScrollHandler;
+import main.java.ulibs.engine.input.Inputs;
+import main.java.ulibs.engine.input.KeyInput;
+import main.java.ulibs.engine.input.MouseInput;
 import main.java.ulibs.engine.render.IRenderer;
 import main.java.ulibs.engine.render.ScreenLoading;
 import main.java.ulibs.engine.utils.EnumScreenTearFix;
@@ -28,8 +34,11 @@ import main.java.ulibs.gl.utils.exceptions.GLException;
 public abstract class ClientBase extends CommonBase {
 	private static int hudWidth, hudHeight;
 	
-	private static InputHolder inputHolder;
-	private static GLFWCursorPosCallbackI cursorInput;
+	public static final Vec2i MOUSE_POS = new Vec2i();
+	
+	private final IInputHandler<KeyInput> keyHandler;
+	private final IInputHandler<MouseInput> mouseHandler;
+	private final IScrollHandler scrollHandler;
 	
 	private static int aspectWidth, aspectHeight, aspectX, aspectY;
 	private static float xScale = 1, yScale = 1;
@@ -45,17 +54,16 @@ public abstract class ClientBase extends CommonBase {
 	private final List<IRenderer> renderers = new ArrayList<IRenderer>();
 	private final List<Shader> shadersToSetup;
 	
-	//TODO make this take in a input holder class with a builder
-	
-	protected ClientBase(String title, String internalTitle, int hudWidth, int hudHeight, InputHolder inputHolder, boolean isDebug, int logCount, WarningType[] warnings,
-			List<Shader> shadersToSetup) {
+	protected ClientBase(String title, String internalTitle, int hudWidth, int hudHeight, boolean isDebug, int logCount, WarningType[] warnings, List<Shader> shadersToSetup) {
 		super(title, internalTitle, isDebug, logCount, warnings);
 		this.shadersToSetup = shadersToSetup;
 		
 		ClientBase.hudWidth = hudWidth;
 		ClientBase.hudHeight = hudHeight;
-		ClientBase.inputHolder = inputHolder;
-		ClientBase.cursorInput = new InputCursor();
+		
+		this.keyHandler = setKeyHandler();
+		this.mouseHandler = setMouseHandler();
+		this.scrollHandler = setScrollHandler();
 		
 		ClientBase.aspectWidth = hudWidth;
 		ClientBase.aspectHeight = hudHeight;
@@ -151,23 +159,69 @@ public abstract class ClientBase extends CommonBase {
 		
 		GLH.setWindowPos(window, windowX, windowY);
 		
-		if (inputHolder != null) {
-			if (inputHolder.getKeyInput() != null) {
-				GLFW.glfwSetKeyCallback(window, inputHolder.getKeyInput());
-			}
-			if (inputHolder.getCharInput() != null) {
-				GLFW.glfwSetCharCallback(window, inputHolder.getCharInput());
-			}
-			if (inputHolder.getMouseInput() != null) {
-				GLFW.glfwSetMouseButtonCallback(window, inputHolder.getMouseInput());
-			}
-			if (inputHolder.getScrollInput() != null) {
-				GLFW.glfwSetScrollCallback(window, inputHolder.getScrollInput());
-			}
-			if (cursorInput != null) {
-				GLFW.glfwSetCursorPosCallback(window, cursorInput);
-			}
+		if (getKeyHandler() != null) {
+			GLFW.glfwSetKeyCallback(window, new GLFWKeyCallbackI() {
+				@Override
+				public void invoke(long window, int key, int scancode, int action, int mods) {
+					switch (action) {
+						case GLFW.GLFW_PRESS:
+							getKeyHandler().onPress(Inputs.findKey(key));
+							break;
+						case GLFW.GLFW_RELEASE:
+							getKeyHandler().onRelease(Inputs.findKey(key));
+							break;
+						case GLFW.GLFW_REPEAT:
+							getKeyHandler().onRepeat(Inputs.findKey(key));
+							break;
+					}
+				}
+			});
 		}
+		
+		if (getMouseHandler() != null) {
+			GLFW.glfwSetMouseButtonCallback(window, new GLFWMouseButtonCallbackI() {
+				@Override
+				public void invoke(long window, int button, int action, int mods) {
+					switch (action) {
+						case GLFW.GLFW_PRESS:
+							getMouseHandler().onPress(Inputs.findMouse(button));
+							break;
+						case GLFW.GLFW_RELEASE:
+							getMouseHandler().onRelease(Inputs.findMouse(button));
+							break;
+						case GLFW.GLFW_REPEAT:
+							getMouseHandler().onRepeat(Inputs.findMouse(button));
+							break;
+					}
+				}
+			});
+		}
+		
+		if (getScrollHandler() != null) {
+			GLFW.glfwSetScrollCallback(window, new GLFWScrollCallbackI() {
+				@Override
+				public void invoke(long window, double xoffset, double yoffset) {
+					if (yoffset == 1) {
+						getScrollHandler().onScrollUp();
+					} else {
+						getScrollHandler().onScrollDown();
+					}
+				}
+			});
+		}
+		
+		GLFW.glfwSetCursorPosCallback(window, new GLFWCursorPosCallbackI() {
+			@Override
+			public void invoke(long window, double xpos, double ypos) {
+				if (isLoading()) {
+					return;
+				}
+				
+				float mousePosX = (((float) xpos - getViewportX()) / (getViewportWidth() / getHudWidth()));
+				float mousePosY = (((float) ypos - getViewportY()) / (getViewportHeight() / getHudHeight()));
+				MOUSE_POS.set(Math.round(mousePosX), Math.round(mousePosY));
+			}
+		});
 		
 		GLFW.glfwSetWindowPosCallback(window, new GLFWWindowPosCallbackI() {
 			@Override
@@ -176,6 +230,7 @@ public abstract class ClientBase extends CommonBase {
 				windowY = ypos;
 			}
 		});
+		
 		GLFW.glfwSetWindowSizeCallback(window, new GLFWWindowSizeCallbackI() {
 			@Override
 			public void invoke(long window, int width, int height) {
@@ -193,12 +248,10 @@ public abstract class ClientBase extends CommonBase {
 				yScale = 1 + (float) (aspectHeight - getHudHeight()) / getHudHeight();
 				xScale = 1 + (float) (aspectWidth - getHudWidth()) / getHudWidth();
 				
-				InputCursor.updateValues();
 				GLH.setViewport(aspectX, aspectY, aspectWidth, aspectHeight);
 			}
 		});
 		
-		InputCursor.updateValues();
 		GLFW.glfwMakeContextCurrent(window);
 		GLFW.glfwShowWindow(window);
 		
@@ -212,6 +265,12 @@ public abstract class ClientBase extends CommonBase {
 		Shaders.registerAll();
 		for (Shader s : shadersToSetup) {
 			s.setup();
+		}
+		
+		try { //haha ugly force load
+			Class.forName(Inputs.class.getName());
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
 		}
 		
 		Console.print(WarningType.Info, "OpenGL setup finished! Running OpenGL version: " + GLH.getVersion() + "!");
@@ -251,6 +310,24 @@ public abstract class ClientBase extends CommonBase {
 			GLFW.glfwSetWindowAttrib(window, GLFW.GLFW_DECORATED, GLFW.GLFW_TRUE);
 			GLFW.glfwSetWindowMonitor(window, 0, lastWindowX, lastWindowY, lastWidth, lastHeight, v.refreshRate());
 		}
+	}
+	
+	protected abstract IInputHandler<KeyInput> setKeyHandler();
+	
+	protected abstract IInputHandler<MouseInput> setMouseHandler();
+	
+	protected abstract IScrollHandler setScrollHandler();
+	
+	public final IInputHandler<KeyInput> getKeyHandler() {
+		return keyHandler;
+	}
+	
+	public final IInputHandler<MouseInput> getMouseHandler() {
+		return mouseHandler;
+	}
+	
+	public final IScrollHandler getScrollHandler() {
+		return scrollHandler;
 	}
 	
 	@Override
