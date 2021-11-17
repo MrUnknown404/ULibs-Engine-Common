@@ -2,10 +2,14 @@ package main.java.ulibs.engine.input;
 
 import java.util.Objects;
 
+/**
+ * Simple class containing id data. See {@link Inputs}
+ * @author -Unknown-
+ */
 public class MouseInput implements IInput<MouseInput> {
 	private final int id;
 	
-	public MouseInput(int id) {
+	MouseInput(int id) {
 		this.id = id;
 	}
 	

@@ -34,6 +34,7 @@ import main.java.ulibs.gl.utils.exceptions.GLException;
 public abstract class ClientBase extends CommonBase {
 	private static int hudWidth, hudHeight;
 	
+	/** A {@link Vec2i} for the current mouse position */
 	public static final Vec2i MOUSE_POS = new Vec2i();
 	
 	private final IInputHandler<KeyInput> keyHandler;

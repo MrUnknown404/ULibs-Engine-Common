@@ -1,4 +1,5 @@
 package main.java.ulibs.engine.utils;
+
 import main.java.ulibs.common.math.Vec2f;
 import main.java.ulibs.common.math.Vec2i;
 import main.java.ulibs.common.math.Vec4f;
@@ -17,6 +18,9 @@ public class HitBox {
 		this.h = h;
 	}
 	
+	/**@param box The HitBox to check for intersection
+	 * @return True if the given HitBox intersects with self
+	 */
 	public boolean intersects(HitBox box) {
 		float tw = this.w, th = this.h, rw = box.w, rh = box.h;
 		
@@ -34,10 +38,17 @@ public class HitBox {
 		return ((rw < rx || rw > tx) && (rh < ry || rh > ty) && (tw < tx || tw > rx) && (th < ty || th > ry));
 	}
 	
+	/**@param vec The Vec2i to check for intersection
+	 * @return True if the given position intersects with self
+	 */
 	public boolean intersectsPoint(Vec2i vec) {
 		return intersectsPoint(vec.getX(), vec.getY());
 	}
 	
+	/**@param x The X coordinate to check for intersection
+	 * @param y The Y coordinate to check for intersection
+	 * @return True if the given position intersects with self
+	 */
 	public boolean intersectsPoint(int x, int y) {
 		float tw = this.w, th = this.h, rw = 1, rh = 1;
 		
@@ -69,6 +80,14 @@ public class HitBox {
 	
 	public HitBox addY(float y) {
 		return new HitBox(x, this.y + y, w, h);
+	}
+	
+	public HitBox addWH(Vec2f vec) {
+		return new HitBox(x, y, w + vec.getX(), h + vec.getY());
+	}
+	
+	public HitBox addWH(float w, float h) {
+		return new HitBox(x, y, this.w + w, this.h + h);
 	}
 	
 	public HitBox addW(float w) {

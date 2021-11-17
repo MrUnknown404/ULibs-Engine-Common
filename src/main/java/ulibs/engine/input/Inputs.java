@@ -6,7 +6,8 @@ import java.util.Map;
 import org.lwjgl.glfw.GLFW;
 
 /**
- * Class that holds all types of inputs
+ * Class that holds all types of inputs. Really only used for comparing inside your {@link IInputHandler} methods. <br>
+ * You shouldn't need to use the {@link Inputs#findKey(int)} or {@link Inputs#findMouse(int)} methods as those are just used for conversion.
  * @author -Unknown-
  */
 @SuppressWarnings("javadoc")

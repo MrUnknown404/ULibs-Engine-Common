@@ -8,6 +8,7 @@ import org.lwjgl.glfw.GLFW;
 
 import main.java.ulibs.common.utils.Console;
 import main.java.ulibs.common.utils.Console.WarningType;
+import main.java.ulibs.engine.render.IRenderer;
 import main.java.ulibs.engine.utils.IRunnable;
 import main.java.ulibs.engine.utils.Timer;
 import main.java.ulibs.engine.utils.Timer.TimerType;
@@ -45,15 +46,23 @@ public abstract class CommonBase implements Runnable {
 		running = true;
 	}
 	
+	/** A method for printing any info about the JAR location or any other folders created */
 	protected void printJarInfo() {
 		Console.print(WarningType.Debug, " - Logs Location -> '\\Logs'");
 	}
 	
+	/** A method for adding any extra threads that may be needed */
 	protected void addThreads() {
 		gameThread = new Thread(this, "Client");
 		gameThread.start();
 	}
 	
+	/** Adds a timer based off the given information to the tick loop. Ticking is handled internally. <br>
+	 * Once the given time has run out it will run the given {@link IRunnable}
+	 * @param run an {@link IRunnable} to run after the given time
+	 * @param timerType The type of time unit of measurement to use for this timer
+	 * @param time The amount of time to wait to run the given {@link IRunnable}
+	 */
 	public final void addTimer(IRunnable run, TimerType timerType, long time) {
 		switch (timerType) {
 			case minute:
@@ -69,14 +78,18 @@ public abstract class CommonBase implements Runnable {
 		timers.add(new Timer(run, timerType, time));
 	}
 	
+	/** For anything that needs to run before anything else. (Such as OpenGL stuff) */
 	protected abstract void preRun();
 	
+	/** First initialization method that'll run. */
 	protected abstract void preInit();
 	
 	protected abstract void rendererSetup();
 	
+	/** Second initialization method that'll run. Should setup {@link IRenderer}s here */
 	protected abstract void init();
 	
+	/** Third initialization method that'll run. Should setup {@link IRenderer}s here */
 	protected abstract void postInit();
 	
 	protected abstract void preTick();
@@ -85,6 +98,7 @@ public abstract class CommonBase implements Runnable {
 	
 	protected abstract void renderWrap();
 	
+	/** @return True of the window should close, otherwise false */
 	protected abstract boolean shouldClose();
 	
 	private void preInitWrap() {
