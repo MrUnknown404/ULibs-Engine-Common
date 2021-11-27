@@ -9,6 +9,7 @@ import main.java.ulibs.common.utils.Console;
 import main.java.ulibs.engine.ClientBase;
 
 public class GetResource {
+	/** A blank debug image that'll be used in the event {@link GetResource#getTexture(String, String)} could not find any image at the given path */
 	public static final BufferedImage NIL = getNilTexture();
 	
 	private static BufferedImage getNilTexture() {

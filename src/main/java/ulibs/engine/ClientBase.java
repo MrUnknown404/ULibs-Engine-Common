@@ -18,11 +18,11 @@ import main.java.ulibs.common.math.Vec2i;
 import main.java.ulibs.common.utils.Console;
 import main.java.ulibs.common.utils.Console.WarningType;
 import main.java.ulibs.engine.init.Shaders;
+import main.java.ulibs.engine.input.EnumKeyInput;
+import main.java.ulibs.engine.input.EnumMouseInput;
 import main.java.ulibs.engine.input.IInputHandler;
 import main.java.ulibs.engine.input.IScrollHandler;
 import main.java.ulibs.engine.input.Inputs;
-import main.java.ulibs.engine.input.KeyInput;
-import main.java.ulibs.engine.input.MouseInput;
 import main.java.ulibs.engine.render.IRenderer;
 import main.java.ulibs.engine.render.ScreenLoading;
 import main.java.ulibs.engine.utils.EnumScreenTearFix;
@@ -37,8 +37,8 @@ public abstract class ClientBase extends CommonBase {
 	/** A {@link Vec2i} for the current mouse position */
 	public static final Vec2i MOUSE_POS = new Vec2i();
 	
-	private final IInputHandler<KeyInput> keyHandler;
-	private final IInputHandler<MouseInput> mouseHandler;
+	private final IInputHandler<EnumKeyInput> keyHandler;
+	private final IInputHandler<EnumMouseInput> mouseHandler;
 	private final IScrollHandler scrollHandler;
 	
 	private static int aspectWidth, aspectHeight, aspectX, aspectY;
@@ -166,13 +166,13 @@ public abstract class ClientBase extends CommonBase {
 				public void invoke(long window, int key, int scancode, int action, int mods) {
 					switch (action) {
 						case GLFW.GLFW_PRESS:
-							getKeyHandler().onPress(Inputs.findKey(key));
+							getKeyHandler().onPress(Inputs.getKeyFromInt(key));
 							break;
 						case GLFW.GLFW_RELEASE:
-							getKeyHandler().onRelease(Inputs.findKey(key));
+							getKeyHandler().onRelease(Inputs.getKeyFromInt(key));
 							break;
 						case GLFW.GLFW_REPEAT:
-							getKeyHandler().onRepeat(Inputs.findKey(key));
+							getKeyHandler().onRepeat(Inputs.getKeyFromInt(key));
 							break;
 					}
 				}
@@ -185,13 +185,13 @@ public abstract class ClientBase extends CommonBase {
 				public void invoke(long window, int button, int action, int mods) {
 					switch (action) {
 						case GLFW.GLFW_PRESS:
-							getMouseHandler().onPress(Inputs.findMouse(button));
+							getMouseHandler().onPress(Inputs.getMouseFromInt(button));
 							break;
 						case GLFW.GLFW_RELEASE:
-							getMouseHandler().onRelease(Inputs.findMouse(button));
+							getMouseHandler().onRelease(Inputs.getMouseFromInt(button));
 							break;
 						case GLFW.GLFW_REPEAT:
-							getMouseHandler().onRepeat(Inputs.findMouse(button));
+							getMouseHandler().onRepeat(Inputs.getMouseFromInt(button));
 							break;
 					}
 				}
@@ -313,17 +313,17 @@ public abstract class ClientBase extends CommonBase {
 		}
 	}
 	
-	protected abstract IInputHandler<KeyInput> setKeyHandler();
+	protected abstract IInputHandler<EnumKeyInput> setKeyHandler();
 	
-	protected abstract IInputHandler<MouseInput> setMouseHandler();
+	protected abstract IInputHandler<EnumMouseInput> setMouseHandler();
 	
 	protected abstract IScrollHandler setScrollHandler();
 	
-	public final IInputHandler<KeyInput> getKeyHandler() {
+	public final IInputHandler<EnumKeyInput> getKeyHandler() {
 		return keyHandler;
 	}
 	
-	public final IInputHandler<MouseInput> getMouseHandler() {
+	public final IInputHandler<EnumMouseInput> getMouseHandler() {
 		return mouseHandler;
 	}
 	

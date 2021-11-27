@@ -35,17 +35,21 @@ public class TextureAtlas<T extends INameable> {
 		g.dispose();
 		
 		texture = new Texture(img);
-		
 	}
 	
-	public Vec2f get(T t) {
-		return map.get(t);
+	/**@param obj The object to look for
+	 * @return The given object's texture coords as a {@link Vec2f}
+	 */
+	public Vec2f getTextureCoordsFor(T obj) {
+		return map.get(obj);
 	}
 	
+	/** Same as {@link Texture#bind()} */
 	public void bind() {
 		texture.bind();
 	}
 	
+	/** @return The Width/Height of the atlas */
 	public int size() {
 		return size;
 	}
