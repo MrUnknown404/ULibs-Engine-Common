@@ -11,7 +11,7 @@ import main.java.ulibs.common.utils.ICopyable;
 public class HitBox implements ICopyable<HitBox> {
 	/** Coordinate values used for math */
 	@SuppressWarnings("javadoc") //Bugs Eclipse out? shows  Y/W/H as undocumented?
-	protected final float x, y, w, h;
+	protected float x, y, w, h;
 	
 	/** Creates a new HitBox with the given values
 	 * @param vec Vec4f to grab coordinates from
@@ -73,61 +73,73 @@ public class HitBox implements ICopyable<HitBox> {
 	}
 	
 	/**@param vec new X/Y coordinates to add to the pre-existing X/Y
-	 * @return A new HitBox with the given values
+	 * @return Self with new values
 	 */
 	public HitBox addXY(Vec2f vec) {
-		return new HitBox(x + vec.getX(), y + vec.getY(), w, h);
+		x += vec.getX();
+		y += vec.getY();
+		return this;
 	}
 	
 	/**@param x new X coordinate to add to the pre-existing X
 	 * @param y new Y coordinate to add to the pre-existing Y
-	 * @return A new HitBox with the given values
+	 * @return Self with new values
 	 */
 	public HitBox addXY(float x, float y) {
-		return new HitBox(this.x + x, this.y + y, w, h);
+		this.x += x;
+		this.y += y;
+		return this;
 	}
 	
 	/**@param x new X coordinate to add to the pre-existing X
-	 * @return A new HitBox with the given values
+	 * @return Self with new values
 	 */
 	public HitBox addX(float x) {
-		return new HitBox(this.x + x, y, w, h);
+		this.x += x;
+		return this;
 	}
 	
 	/**@param y new Y coordinate to add to the pre-existing Y
-	 * @return A new HitBox with the given values
+	 * @return Self with new values
 	 */
 	public HitBox addY(float y) {
-		return new HitBox(x, this.y + y, w, h);
+		this.y += y;
+		return this;
 	}
 	
 	/**@param vec new width/height to add to the pre-existing width/height
-	 * @return A new HitBox with the given values
+	 * @return Self with new values
 	 */
 	public HitBox addWH(Vec2f vec) {
-		return new HitBox(x, y, w + vec.getX(), h + vec.getY());
+		w += vec.getX();
+		h += vec.getY();
+		return this;
 	}
 	
 	/**@param w new width to add to the pre-existing width
 	 * @param h new height to add to the pre-existing height
-	 * @return A new HitBox with the given values
+	 * @return Self with new values
 	 */
 	public HitBox addWH(float w, float h) {
-		return new HitBox(x, y, this.w + w, this.h + h);
+		this.w += w;
+		this.h += h;
+		return this;
 	}
 	
 	/**@param w new width to add to the pre-existing width
-	 * @return A new HitBox with the given values
+	 * @return Self with new values
 	 */
 	public HitBox addW(float w) {
-		return new HitBox(x, y, this.w + w, h);
+		this.w += w;
+		return this;
 	}
 	
 	/**@param h new height to add to the pre-existing height
-	 * @return A new HitBox with the given values
+	 * @return Self with new values
 	 */
 	public HitBox addH(float h) {
-		return new HitBox(x, y, w, this.h + h);
+		this.h += h;
+		return this;
 	}
 	
 	@Override

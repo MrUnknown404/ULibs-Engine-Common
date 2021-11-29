@@ -9,10 +9,8 @@ import org.lwjgl.glfw.GLFWCursorPosCallbackI;
 import org.lwjgl.glfw.GLFWKeyCallbackI;
 import org.lwjgl.glfw.GLFWMouseButtonCallbackI;
 import org.lwjgl.glfw.GLFWScrollCallbackI;
-import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.glfw.GLFWWindowPosCallbackI;
 import org.lwjgl.glfw.GLFWWindowSizeCallbackI;
-import org.lwjgl.system.MemoryUtil;
 
 import main.java.ulibs.common.math.Vec2i;
 import main.java.ulibs.common.utils.Console;
@@ -268,12 +266,6 @@ public abstract class ClientBase extends CommonBase {
 			s.setup();
 		}
 		
-		try { //haha ugly force load
-			Class.forName(Inputs.class.getName());
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-		}
-		
 		Console.print(WarningType.Info, "OpenGL setup finished! Running OpenGL version: " + GLH.getVersion() + "!");
 	}
 	
@@ -284,32 +276,31 @@ public abstract class ClientBase extends CommonBase {
 	}
 	
 	public static final void refreshFullscreen() {
-		GLFWVidMode v = GLFW.glfwGetVideoMode(GLFW.glfwGetPrimaryMonitor());
 		if (isFullscreen) {
 			lastWidth = (aspectX * 2) + aspectWidth;
 			lastHeight = (aspectY * 2) + aspectHeight;
 			lastWindowX = windowX;
 			lastWindowY = windowY;
 			
-			GLFW.glfwSetWindowAttrib(window, GLFW.GLFW_DECORATED, GLFW.GLFW_FALSE);
+			GLH.disableWindowDecorations(window);
 			switch (screenFix) {
 				case experimental:
-					GLFW.glfwSwapInterval(0);
-					GLFW.glfwSetWindowMonitor(window, MemoryUtil.NULL, 0, -1, v.width(), v.height() + 2, v.refreshRate());
+					GLH.swapInterval(0);
+					GLH.setWindowData(window, 0, -1, GLH.getMonitorSize().addY(2));
 					break;
 				case off:
-					GLFW.glfwSwapInterval(0);
-					GLFW.glfwSetWindowMonitor(window, MemoryUtil.NULL, 0, 0, v.width(), v.height(), v.refreshRate());
+					GLH.swapInterval(0);
+					GLH.setWindowData(window, 0, 0, GLH.getMonitorSize());
 					break;
 				case vsync:
-					GLFW.glfwSwapInterval(1);
-					GLFW.glfwSetWindowMonitor(window, MemoryUtil.NULL, 0, 0, v.width(), v.height(), v.refreshRate());
+					GLH.swapInterval(1);
+					GLH.setWindowData(window, 0, 0, GLH.getMonitorSize());
 					break;
 			}
 		} else {
-			GLFW.glfwSwapInterval(0);
-			GLFW.glfwSetWindowAttrib(window, GLFW.GLFW_DECORATED, GLFW.GLFW_TRUE);
-			GLFW.glfwSetWindowMonitor(window, 0, lastWindowX, lastWindowY, lastWidth, lastHeight, v.refreshRate());
+			GLH.swapInterval(0);
+			GLH.enableWindowDecorations(window);
+			GLH.setWindowData(window, lastWindowX, lastWindowY, lastWidth, lastHeight);
 		}
 	}
 	
