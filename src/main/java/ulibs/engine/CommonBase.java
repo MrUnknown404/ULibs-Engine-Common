@@ -210,7 +210,12 @@ public abstract class CommonBase implements Runnable {
 	
 	/** @return The game's internal asset package location. <br> Which should look like "/main/resources/{@link #internalTitle}/assets/" */
 	public static final String getAssetLocation() {
-		return "/main/resources/" + internalTitle + "/assets/";
+		return "/main/resources/" + getInternalTitle() + "/assets/";
+	}
+	
+	/** @return The game's internal title. See {@link #internalTitle} */
+	public static final String getInternalTitle() {
+		return internalTitle;
 	}
 	
 	/** @return Returns an integer representing the game's FPS. If this number is lower than 60 problems may occur! */

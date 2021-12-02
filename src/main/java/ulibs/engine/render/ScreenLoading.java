@@ -1,9 +1,10 @@
 package main.java.ulibs.engine.render;
 
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 
-import main.java.ulibs.common.utils.Console;
-import main.java.ulibs.common.utils.Console.WarningType;
+import javax.imageio.ImageIO;
+
 import main.java.ulibs.engine.ClientBase;
 import main.java.ulibs.engine.init.Shaders;
 import main.java.ulibs.engine.utils.GetResource;
@@ -14,8 +15,7 @@ import main.java.ulibs.gl.gl.VertexArray;
 import main.java.ulibs.gl.gl.ZConstant;
 
 public class ScreenLoading implements IRenderer {
-	
-	private static final Texture LOADING_SCREEN = new Texture(getTexture("gui", "loading_screen"));
+	private static final Texture LOADING_SCREEN = new Texture(getDefaultTexture());
 	private VertexArray va;
 	
 	@Override
@@ -35,9 +35,12 @@ public class ScreenLoading implements IRenderer {
 		GLH.unbindShader();
 	}
 	
-	private static BufferedImage getTexture(String folder, String name) {
-		BufferedImage i = GetResource.getTexture(folder, name);
-		Console.print(WarningType.TextureDebug, (i == GetResource.NIL ? "Unable to " : "") + "register '" + name + "' for " + ScreenLoading.class.getSimpleName());
-		return i;
+	private static BufferedImage getDefaultTexture() {
+		try {
+			return ImageIO.read(GetResource.class.getResourceAsStream("/main/resources/ulibs/engine/assets/textures/gui/loading_screen.png"));
+		} catch (IOException e) {
+			e.printStackTrace();
+			return null;
+		}
 	}
 }

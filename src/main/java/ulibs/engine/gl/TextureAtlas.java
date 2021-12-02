@@ -26,7 +26,7 @@ public class TextureAtlas<T extends INameable> {
 		BufferedImage img = new BufferedImage(size * cellSize, size * cellSize, BufferedImage.TYPE_INT_ARGB);
 		Graphics2D g = img.createGraphics();
 		
-		float size = this.size, s = 1f / size;
+		float size = this.size, s = 1f / size; //For future me, size needs to be a float cuz math
 		for (int i = 0; i < list.size(); i++) {
 			map.put(list.get(i), new Vec2f((i % size) / size, -MathH.floor(i / size) / size - s));
 			
@@ -37,11 +37,12 @@ public class TextureAtlas<T extends INameable> {
 		texture = new Texture(img);
 	}
 	
-	/**@param obj The object to look for
-	 * @return The given object's texture coords as a {@link Vec2f}
-	 */
-	public Vec2f getTextureCoordsFor(T obj) {
-		return map.get(obj);
+	public float[] getTextureCoordsFor(T obj) {
+		Vec2f texCoords = map.get(obj);
+		float s = 1f / size;
+		
+		return new float[] { texCoords.getX(), texCoords.getY() + s, texCoords.getX(), texCoords.getY(), texCoords.getX() + s, texCoords.getY(), texCoords.getX() + s,
+				texCoords.getY() + s };
 	}
 	
 	/** Same as {@link Texture#bind()} */

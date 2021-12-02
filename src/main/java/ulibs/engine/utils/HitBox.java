@@ -21,6 +21,17 @@ public class HitBox implements ICopyable<HitBox> {
 	}
 	
 	/** Creates a new HitBox with the given values
+	 * @param pos X/Y coordinate
+	 * @param size Width/Height
+	 */
+	public HitBox(Vec2f pos, Vec2f size) {
+		this.x = pos.getX();
+		this.y = pos.getY();
+		this.w = size.getX();
+		this.h = size.getY();
+	}
+	
+	/** Creates a new HitBox with the given values
 	 * @param x X coordinate
 	 * @param y Y coordinate
 	 * @param w Width

@@ -53,4 +53,8 @@ public class Shaders {
 	public static ShaderHudTextureless HudTextureless() {
 		return hudTextureless;
 	}
+	
+	public static List<Shader> getAll() {
+		return ALL;
+	}
 }

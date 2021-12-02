@@ -3,6 +3,7 @@ package main.java.ulibs.engine;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWCursorPosCallbackI;
@@ -40,7 +41,6 @@ public abstract class ClientBase extends CommonBase {
 	private final IScrollHandler scrollHandler;
 	
 	private static int aspectWidth, aspectHeight, aspectX, aspectY;
-	private static float xScale = 1, yScale = 1;
 	private static int lastWidth, lastHeight, windowX, windowY, lastWindowX, lastWindowY;
 	
 	private static long window;
@@ -51,21 +51,21 @@ public abstract class ClientBase extends CommonBase {
 	private static EnumScreenTearFix screenFix = EnumScreenTearFix.vsync;
 	
 	private final List<IRenderer> renderers = new ArrayList<IRenderer>();
-	private final List<Shader> shadersToSetup;
+	private final Supplier<List<Shader>> shadersToSetup;
 	
-	protected ClientBase(String title, String internalTitle, int hudWidth, int hudHeight, boolean isDebug, int logCount, WarningType[] warnings, List<Shader> shadersToSetup) {
+	protected ClientBase(String title, String internalTitle, int hudWidth, int hudHeight, boolean isDebug, int logCount, WarningType[] warnings,
+			Supplier<List<Shader>> shadersToSetup) {
 		super(title, internalTitle, isDebug, logCount, warnings);
 		this.shadersToSetup = shadersToSetup;
 		
 		ClientBase.hudWidth = hudWidth;
 		ClientBase.hudHeight = hudHeight;
+		ClientBase.aspectWidth = hudWidth;
+		ClientBase.aspectHeight = hudHeight;
 		
 		this.keyHandler = setKeyHandler();
 		this.mouseHandler = setMouseHandler();
 		this.scrollHandler = setScrollHandler();
-		
-		ClientBase.aspectWidth = hudWidth;
-		ClientBase.aspectHeight = hudHeight;
 		
 		Thread.currentThread().setName("Client");
 	}
@@ -233,21 +233,33 @@ public abstract class ClientBase extends CommonBase {
 		GLFW.glfwSetWindowSizeCallback(window, new GLFWWindowSizeCallbackI() {
 			@Override
 			public void invoke(long window, int width, int height) {
-				aspectWidth = width;
-				aspectHeight = (int) (aspectWidth / (16f / 9f));
-				
-				if (aspectHeight > height) {
-					aspectHeight = height;
-					aspectWidth = (int) (aspectHeight * (16f / 9f));
+				switch (getViewportResizeType()) {
+					case scale:
+						aspectWidth = width;
+						aspectHeight = (int) (aspectWidth / (16f / 9f));
+						
+						if (aspectHeight > height) {
+							aspectHeight = height;
+							aspectWidth = (int) (aspectHeight * (16f / 9f));
+						}
+						
+						aspectX = (int) ((width / 2f) - (aspectWidth / 2f));
+						aspectY = (int) ((height / 2f) - (aspectHeight / 2f));
+						
+						GLH.setViewport(aspectX, aspectY, aspectWidth, aspectHeight);
+						break;
+					case stretch:
+						aspectWidth = width;
+						aspectHeight = height;
+						GLH.setViewport(0, 0, aspectWidth, aspectHeight);
+						break;
 				}
 				
-				aspectX = (int) ((width / 2f) - (aspectWidth / 2f));
-				aspectY = (int) ((height / 2f) - (aspectHeight / 2f));
-				
-				yScale = 1 + (float) (aspectHeight - getHudHeight()) / getHudHeight();
-				xScale = 1 + (float) (aspectWidth - getHudWidth()) / getHudWidth();
-				
-				GLH.setViewport(aspectX, aspectY, aspectWidth, aspectHeight);
+				for (Shader s : Shaders.getAll()) { //This may cause problems?
+					s.bind();
+					s.onResize();
+				}
+				GLH.unbindShader();
 			}
 		});
 		
@@ -256,15 +268,14 @@ public abstract class ClientBase extends CommonBase {
 		
 		GLH.createCapabilities();
 		
+		GLH.swapInterval(0);
 		GLH.clearColor(new Color(20, 20, 20, 1));
 		GLH.enableDepth();
 		GLH.enableBlend();
 		GLH.setActiveTexture0();
 		
+		Shaders.getAll().addAll(shadersToSetup.get());
 		Shaders.registerAll();
-		for (Shader s : shadersToSetup) {
-			s.setup();
-		}
 		
 		Console.print(WarningType.Info, "OpenGL setup finished! Running OpenGL version: " + GLH.getVersion() + "!");
 	}
@@ -310,6 +321,8 @@ public abstract class ClientBase extends CommonBase {
 	
 	protected abstract IScrollHandler setScrollHandler();
 	
+	protected abstract EnumViewportResizeType getViewportResizeType();
+	
 	public final IInputHandler<EnumKeyInput> getKeyHandler() {
 		return keyHandler;
 	}
@@ -351,11 +364,8 @@ public abstract class ClientBase extends CommonBase {
 		return aspectHeight;
 	}
 	
-	public static final float getXScale() {
-		return xScale;
-	}
-	
-	public static final float getYScale() {
-		return yScale;
+	protected enum EnumViewportResizeType {
+		scale,
+		stretch;
 	}
 }
