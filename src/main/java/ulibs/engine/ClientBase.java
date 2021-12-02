@@ -216,9 +216,16 @@ public abstract class ClientBase extends CommonBase {
 					return;
 				}
 				
-				float mousePosX = (((float) xpos - getViewportX()) / (getViewportWidth() / getHudWidth()));
-				float mousePosY = (((float) ypos - getViewportY()) / (getViewportHeight() / getHudHeight()));
-				MOUSE_POS.set(Math.round(mousePosX), Math.round(mousePosY));
+				switch (getViewportResizeType()) {
+					case scale:
+						float mousePosX = (((float) xpos - getViewportX()) / (getViewportWidth() / getHudWidth()));
+						float mousePosY = (((float) ypos - getViewportY()) / (getViewportHeight() / getHudHeight()));
+						MOUSE_POS.set(Math.round(mousePosX), Math.round(mousePosY));
+						break;
+					case stretch:
+						MOUSE_POS.set((int) Math.round(xpos), (int) Math.round(ypos));
+						break;
+				}
 			}
 		});
 		
