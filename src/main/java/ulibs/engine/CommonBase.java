@@ -188,6 +188,11 @@ public abstract class CommonBase implements Runnable {
 		}
 	}
 	
+	/** Toggles debug mode */
+	public static final void toggleDebug() {
+		isDebug = !isDebug;
+	}
+	
 	/** @return Whether or not the game is running in Debug mode */
 	public static final boolean isDebug() {
 		return isDebug;

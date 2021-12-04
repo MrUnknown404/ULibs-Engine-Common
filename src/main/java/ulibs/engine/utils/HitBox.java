@@ -32,6 +32,28 @@ public class HitBox implements ICopyable<HitBox> {
 	}
 	
 	/** Creates a new HitBox with the given values
+	 * @param pos X/Y coordinate
+	 * @param size Width/Height
+	 */
+	public HitBox(Vec2i pos, Vec2f size) {
+		this.x = pos.getX();
+		this.y = pos.getY();
+		this.w = size.getX();
+		this.h = size.getY();
+	}
+	
+	/** Creates a new HitBox with the given values
+	 * @param pos X/Y coordinate
+	 * @param size Width/Height
+	 */
+	public HitBox(Vec2f pos, Vec2i size) {
+		this.x = pos.getX();
+		this.y = pos.getY();
+		this.w = size.getX();
+		this.h = size.getY();
+	}
+	
+	/** Creates a new HitBox with the given values
 	 * @param x X coordinate
 	 * @param y Y coordinate
 	 * @param w Width
@@ -58,11 +80,26 @@ public class HitBox implements ICopyable<HitBox> {
 		return intersectsPoint(vec.getX(), vec.getY());
 	}
 	
+	/**@param vec The Vec2i to check for intersection
+	 * @return True if the given position intersects with self
+	 */
+	public boolean intersectsPoint(Vec2f vec) {
+		return intersectsPoint(vec.getX(), vec.getY());
+	}
+	
 	/**@param x The X coordinate to check for intersection
 	 * @param y The Y coordinate to check for intersection
 	 * @return True if the given position intersects with self
 	 */
 	public boolean intersectsPoint(int x, int y) {
+		return intersectMath(x, y, 1, 1);
+	}
+	
+	/**@param x The X coordinate to check for intersection
+	 * @param y The Y coordinate to check for intersection
+	 * @return True if the given position intersects with self
+	 */
+	public boolean intersectsPoint(float x, float y) {
 		return intersectMath(x, y, 1, 1);
 	}
 	

@@ -43,4 +43,9 @@ public class ScreenLoading implements IRenderer {
 			return null;
 		}
 	}
+	
+	@Override
+	public void onResize() {
+		
+	}
 }

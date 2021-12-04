@@ -10,6 +10,8 @@ public interface IRenderer {
 	
 	public void renderPre();
 	
+	public void onResize();
+	
 	public default void renderPost() {
 		
 	}

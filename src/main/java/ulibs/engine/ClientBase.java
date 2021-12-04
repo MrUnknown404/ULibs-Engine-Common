@@ -262,11 +262,15 @@ public abstract class ClientBase extends CommonBase {
 						break;
 				}
 				
+				onResize();
 				for (Shader s : Shaders.getAll()) { //This may cause problems?
 					s.bind();
 					s.onResize();
 				}
 				GLH.unbindShader();
+				for (IRenderer r : renderers) {
+					r.onResize();
+				}
 			}
 		});
 		
@@ -321,6 +325,8 @@ public abstract class ClientBase extends CommonBase {
 			GLH.setWindowData(window, lastWindowX, lastWindowY, lastWidth, lastHeight);
 		}
 	}
+	
+	protected abstract void onResize();
 	
 	protected abstract IInputHandler<EnumKeyInput> setKeyHandler();
 	
