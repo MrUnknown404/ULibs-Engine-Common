@@ -2,9 +2,13 @@ package main.java.ulibs.engine.gl;
 
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.imageio.ImageIO;
 
 import main.java.ulibs.common.helpers.MathH;
 import main.java.ulibs.common.math.Vec2f;
@@ -34,6 +38,11 @@ public class TextureAtlas<T extends INameable> {
 		}
 		g.dispose();
 		
+		try {
+			ImageIO.write(img, "PNG", new File("D:/test.png"));
+		} catch (IOException e) {
+		}
+		
 		texture = new Texture(img);
 	}
 	
@@ -56,8 +65,7 @@ public class TextureAtlas<T extends INameable> {
 	}
 	
 	private static BufferedImage getTexture(String folder, String name) {
-		BufferedImage i = GetResource.getTexture(folder, name);
-		Console.print(WarningType.TextureDebug, (i == GetResource.NIL ? "Unable to " : "") + "register '" + name + "' for " + TextureAtlas.class.getSimpleName() + "!");
-		return i;
+		Console.print(WarningType.TextureDebug, "Registered '" + name + "' for " + TextureAtlas.class.getSimpleName() + "!");
+		return GetResource.getTexture(folder, name);
 	}
 }

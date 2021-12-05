@@ -54,8 +54,7 @@ public class RandomTextureAtlas {
 	}
 	
 	private static BufferedImage getTexture(String folder, String name) {
-		BufferedImage i = GetResource.getTexture(folder, name);
-		Console.print(WarningType.TextureDebug, (i == GetResource.NIL ? "Unable to " : "") + "register '" + name + "' for " + RandomTextureAtlas.class.getSimpleName() + "!");
-		return i;
+		Console.print(WarningType.TextureDebug, "Registered '" + name + "' for " + RandomTextureAtlas.class.getSimpleName() + "!");
+		return GetResource.getTexture(folder, name);
 	}
 }

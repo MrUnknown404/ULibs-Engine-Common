@@ -6,6 +6,7 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 
 import main.java.ulibs.common.utils.Console;
+import main.java.ulibs.common.utils.Console.WarningType;
 import main.java.ulibs.engine.ClientBase;
 
 public class GetResource {
@@ -27,7 +28,7 @@ public class GetResource {
 		}
 		
 		if (GetResource.class.getResourceAsStream(ClientBase.getAssetLocation() + "textures/" + folder + textureName + ".png") == null) {
-			Console.print(Console.WarningType.Error, "Cannot find texture : '" + ClientBase.getAssetLocation() + "textures/" + folder + textureName + ".png'");
+			Console.print(WarningType.Error, "Cannot find texture : '" + ClientBase.getAssetLocation() + "textures/" + folder + textureName + ".png'");
 			return NIL;
 		}
 		
