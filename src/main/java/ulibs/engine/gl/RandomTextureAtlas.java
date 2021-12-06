@@ -4,6 +4,7 @@ import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import main.java.ulibs.common.helpers.MathH;
 import main.java.ulibs.common.math.Vec2f;
@@ -43,6 +44,14 @@ public class RandomTextureAtlas {
 	/** @return The Width/Height of the atlas */
 	public int size() {
 		return size;
+	}
+	
+	public float[] getRandomTextureCoords(Random r) {
+		Vec2f texCoords = coordinateList.get(r.nextInt(coordinateList.size()));
+		float s = 1f / size;
+		
+		return new float[] { texCoords.getX(), texCoords.getY() + s, texCoords.getX(), texCoords.getY(), texCoords.getX() + s, texCoords.getY(), texCoords.getX() + s,
+				texCoords.getY() + s };
 	}
 	
 	public float[] getRandomTextureCoords() {

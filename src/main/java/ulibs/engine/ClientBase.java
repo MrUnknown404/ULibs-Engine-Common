@@ -279,7 +279,7 @@ public abstract class ClientBase extends CommonBase {
 		
 		GLH.createCapabilities();
 		
-		GLH.swapInterval(0);
+		GLH.setVSync(true);
 		GLH.clearColor(new Color(20, 20, 20, 1));
 		GLH.enableDepth();
 		GLH.enableBlend();
@@ -307,23 +307,27 @@ public abstract class ClientBase extends CommonBase {
 			GLH.disableWindowDecorations(window);
 			switch (screenFix) {
 				case experimental:
-					GLH.swapInterval(0);
+					GLH.setVSync(false);
 					GLH.setWindowData(window, 0, -1, GLH.getMonitorSize().addY(2));
 					break;
 				case off:
-					GLH.swapInterval(0);
+					GLH.setVSync(false);
 					GLH.setWindowData(window, 0, 0, GLH.getMonitorSize());
 					break;
 				case vsync:
-					GLH.swapInterval(1);
+					GLH.setVSync(true);
 					GLH.setWindowData(window, 0, 0, GLH.getMonitorSize());
 					break;
 			}
 		} else {
-			GLH.swapInterval(0);
+			GLH.setVSync(screenFix == EnumScreenTearFix.vsync);
 			GLH.enableWindowDecorations(window);
 			GLH.setWindowData(window, lastWindowX, lastWindowY, lastWidth, lastHeight);
 		}
+	}
+	
+	protected void setScreenFixType(EnumScreenTearFix screenFix) {
+		ClientBase.screenFix = screenFix;
 	}
 	
 	protected abstract void onResize();

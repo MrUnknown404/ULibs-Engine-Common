@@ -38,7 +38,7 @@ public interface IRenderer {
 	}
 	
 	public default QuadData createLine(float startX, float startY, float endX, float endY, ZConstant z, float t) {
-		float a1 = (float) Math.toRadians((Math.atan2(endY - startY, endX - startX) * 180 / Math.PI));
+		float a1 = (float) Math.atan2(endY - startY, endX - startX);
 		float r45 = (float) (45f * Math.PI / 180f);
 		
 		float a2 = a1 - r45;
