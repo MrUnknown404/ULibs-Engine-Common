@@ -162,6 +162,10 @@ public abstract class ClientBase extends CommonBase {
 			GLFW.glfwSetKeyCallback(window, new GLFWKeyCallbackI() {
 				@Override
 				public void invoke(long window, int key, int scancode, int action, int mods) {
+					if (isLoading()) {
+						return;
+					}
+					
 					switch (action) {
 						case GLFW.GLFW_PRESS:
 							getKeyHandler().onPress(Inputs.getKeyFromInt(key));
@@ -181,6 +185,10 @@ public abstract class ClientBase extends CommonBase {
 			GLFW.glfwSetMouseButtonCallback(window, new GLFWMouseButtonCallbackI() {
 				@Override
 				public void invoke(long window, int button, int action, int mods) {
+					if (isLoading()) {
+						return;
+					}
+					
 					switch (action) {
 						case GLFW.GLFW_PRESS:
 							getMouseHandler().onPress(Inputs.getMouseFromInt(button));
@@ -200,6 +208,10 @@ public abstract class ClientBase extends CommonBase {
 			GLFW.glfwSetScrollCallback(window, new GLFWScrollCallbackI() {
 				@Override
 				public void invoke(long window, double xoffset, double yoffset) {
+					if (isLoading()) {
+						return;
+					}
+					
 					if (yoffset == 1) {
 						getScrollHandler().onScrollUp();
 					} else {
@@ -215,6 +227,8 @@ public abstract class ClientBase extends CommonBase {
 				if (isLoading()) {
 					return;
 				}
+				
+				onMouseMoved();
 				
 				switch (getViewportResizeType()) {
 					case scale:
@@ -285,7 +299,12 @@ public abstract class ClientBase extends CommonBase {
 		GLH.enableBlend();
 		GLH.setActiveTexture0();
 		
-		Shaders.getAll().addAll(shadersToSetup.get());
+		if (shadersToSetup != null) {
+			List<Shader> list = shadersToSetup.get();
+			if (list != null) {
+				Shaders.getAll().addAll(list);
+			}
+		}
 		Shaders.registerAll();
 		
 		Console.print(WarningType.Info, "OpenGL setup finished! Running OpenGL version: " + GLH.getVersion() + "!");
@@ -331,6 +350,8 @@ public abstract class ClientBase extends CommonBase {
 	}
 	
 	protected abstract void onResize();
+	
+	protected abstract void onMouseMoved();
 	
 	protected abstract IInputHandler<EnumKeyInput> setKeyHandler();
 	
