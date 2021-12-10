@@ -23,6 +23,7 @@ public class Shaders {
 	private static final Matrix4f HUD_PR = Matrix4f.orthographic(0f, ClientBase.getHudWidth(), ClientBase.getHudHeight(), 0f, -1f, 10f);
 	
 	public static void registerAll() {
+		Console.print(WarningType.Info, "Started registering " + Shaders.class.getSimpleName() + "!");
 		moveableObject = add(new ShaderMoveable(WORLD_PR));
 		hud = add(new ShaderHud(HUD_PR));
 		hudTextureless = add(new ShaderHudTextureless(HUD_PR));
@@ -33,10 +34,6 @@ public class Shaders {
 	}
 	
 	private static <T extends Shader> T add(T s) {
-		if (ALL.isEmpty()) {
-			Console.print(WarningType.Info, "Started registering " + Shaders.class.getSimpleName() + "!");
-		}
-		
 		ALL.add(s);
 		Console.print(Console.WarningType.RegisterDebug, "'" + s.name + "' was registered!");
 		return s;
