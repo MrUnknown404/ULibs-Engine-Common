@@ -23,7 +23,7 @@ public abstract class CommonBase implements Runnable {
 	private static final String JAR_LOCATION = new File("").getAbsolutePath();
 	
 	private static int fps;
-	private static boolean running = false, isLoading;
+	private static boolean running = false, isLoading, shouldClose;
 	private static Thread gameThread;
 	
 	private final List<Timer> timers = new ArrayList<Timer>(), timersToKill = new ArrayList<Timer>();
@@ -62,8 +62,9 @@ public abstract class CommonBase implements Runnable {
 	 * @param run an {@link IRunnable} to run after the given time
 	 * @param timerType The type of time unit of measurement to use for this timer
 	 * @param time The amount of time to wait to run the given {@link IRunnable}
+	 * @param repeats Whether or not the timer will repeat. Note that there is no way to remove the timer if this is true
 	 */
-	public final void addTimer(IRunnable run, TimerType timerType, long time) {
+	public final void addTimer(IRunnable run, TimerType timerType, long time, boolean repeats) {
 		switch (timerType) {
 			case minute:
 				time *= 3600;
@@ -75,7 +76,7 @@ public abstract class CommonBase implements Runnable {
 				break;
 		}
 		
-		timers.add(new Timer(run, timerType, time));
+		timers.add(new Timer(run, timerType, time, repeats));
 	}
 	
 	/** For anything that needs to run before anything else. (Such as OpenGL stuff) */
@@ -84,22 +85,25 @@ public abstract class CommonBase implements Runnable {
 	/** First initialization method that'll run. */
 	protected abstract void preInit();
 	
-	protected abstract void rendererSetup();
-	
 	/** Second initialization method that'll run. Should setup {@link IRenderer}s here */
 	protected abstract void init();
 	
-	/** Third initialization method that'll run. Should setup {@link IRenderer}s here */
+	/** Third initialization method that'll run. */
 	protected abstract void postInit();
 	
 	protected abstract void preTick();
 	
 	protected abstract void tick();
 	
+	/** Runs after {@link #init()}. Should be used to setup any renderers */
+	protected abstract void rendererSetup();
+	
 	protected abstract void renderWrap();
 	
 	/** @return True of the window should close, otherwise false */
-	protected abstract boolean shouldClose();
+	protected boolean shouldClose() {
+		return shouldClose;
+	}
 	
 	private void preInitWrap() {
 		Console.print(WarningType.Info, "Pre-Initialization started...");
@@ -120,6 +124,21 @@ public abstract class CommonBase implements Runnable {
 		Console.print(WarningType.Info, "Post-Initialization finished!");
 	}
 	
+	private void onFinishInitWrap() {
+		Console.print(WarningType.Info, "All Initialization has been finished!");
+		onFinishInit();
+	}
+	
+	/** Run after all initialization is done. */
+	protected void onFinishInit() {
+		
+	}
+	
+	/** Runs right before the game closes. */
+	protected void onExit() {
+		
+	}
+	
 	@Override
 	public final void run() {
 		preRun();
@@ -134,6 +153,8 @@ public abstract class CommonBase implements Runnable {
 		
 		while (running) {
 			if (shouldClose()) {
+				Console.print(WarningType.Info, "Goodbye!");
+				onExit();
 				running = false;
 				System.exit(0);
 				break;
@@ -152,7 +173,12 @@ public abstract class CommonBase implements Runnable {
 							t.time--;
 							
 							if (t.time <= 0) {
-								timersToKill.add(t);
+								if (!t.repeats) {
+									timersToKill.add(t);
+								} else {
+									t.resetTime();
+								}
+								
 								t.runnable.run();
 							}
 						}
@@ -182,10 +208,15 @@ public abstract class CommonBase implements Runnable {
 				preInitWrap();
 				initWrap();
 				postInitWrap();
+				onFinishInitWrap();
 				isLoading = false;
 				ranOnce = true;
 			}
 		}
+	}
+	
+	public static final void close() {
+		shouldClose = true;
 	}
 	
 	/** Toggles debug mode */

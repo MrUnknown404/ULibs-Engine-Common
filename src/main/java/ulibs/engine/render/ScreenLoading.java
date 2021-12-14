@@ -16,11 +16,11 @@ import main.java.ulibs.gl.gl.ZConstant;
 
 public class ScreenLoading implements IRenderer {
 	private static final Texture LOADING_SCREEN = new Texture(getDefaultTexture());
-	private VertexArray va;
+	private final VertexArray va = new VertexArray();
 	
 	@Override
 	public void setupGL() {
-		va = new VertexArray().addVerticesWithDefaults(QuadData.createVertex(0, 0, ZConstant.Z_HUD_BASE, ClientBase.getHudWidth(), ClientBase.getHudHeight()));
+		va.addVerticesWithDefaults(QuadData.createVertex(0, 0, ZConstant.Z_HUD_BASE, ClientBase.getHudWidth(), ClientBase.getHudHeight()));
 		va.setup();
 	}
 	
@@ -28,9 +28,7 @@ public class ScreenLoading implements IRenderer {
 	public void renderPre() {
 		Shaders.Hud().bind();
 		LOADING_SCREEN.bind();
-		va.bind();
-		va.draw();
-		va.unbind();
+		va.drawOnce();
 		GLH.unbindTexture();
 		GLH.unbindShader();
 	}

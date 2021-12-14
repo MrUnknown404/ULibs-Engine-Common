@@ -375,7 +375,7 @@ public abstract class ClientBase extends CommonBase {
 	
 	@Override
 	protected final boolean shouldClose() {
-		return GLH.shouldWindowClose(window);
+		return super.shouldClose() || GLH.shouldWindowClose(window);
 	}
 	
 	public static final int getHudWidth() {

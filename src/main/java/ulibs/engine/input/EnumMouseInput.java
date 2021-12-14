@@ -11,11 +11,11 @@ import main.java.ulibs.engine.input.Inputs.IInputEnum;
 public enum EnumMouseInput implements IInputEnum {
 	MOUSE_UNKNOWN(-1),
 	
-	// Left Mouse Button /
+	/** Left Mouse Button */
 	MOUSE_BUTTON_1(GLFW.GLFW_MOUSE_BUTTON_1),
-	// Right Mouse Button /
+	/** Right Mouse Button */
 	MOUSE_BUTTON_2(GLFW.GLFW_MOUSE_BUTTON_2),
-	// Middle Mouse Button /
+	/** Middle Mouse Button */
 	MOUSE_BUTTON_3(GLFW.GLFW_MOUSE_BUTTON_3),
 	
 	MOUSE_BUTTON_4(GLFW.GLFW_MOUSE_BUTTON_4),

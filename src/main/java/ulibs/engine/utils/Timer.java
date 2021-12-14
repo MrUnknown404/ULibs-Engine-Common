@@ -16,17 +16,29 @@ public class Timer {
 	/** The time to wait until it should run {@link #runnable}'s {@link IRunnable#run()}. <br>
 	 * Whether or not this is ticks/seconds/minutes/etc depends on {@link #timerType}! */
 	public long time;
+	/** Whether or not this timer should repeat */
+	public final boolean repeats;
+	
+	private final long maxTime;
 	
 	/**
-	 * Should not be constructed by user. See {@link CommonBase#addTimer(IRunnable, TimerType, long)}!
+	 * Should not be constructed by user. See {@link CommonBase#addTimer(IRunnable, TimerType, long, boolean)}!
 	 * @param runnable See {@link #runnable}
 	 * @param timerType See {@link #timerType}
 	 * @param time See {@link #time}
+	 * @param repeats See {@link #repeats}
 	 */
-	public Timer(IRunnable runnable, TimerType timerType, long time) {
+	public Timer(IRunnable runnable, TimerType timerType, long time, boolean repeats) {
 		this.runnable = runnable;
 		this.timerType = timerType;
+		this.maxTime = time;
 		this.time = time;
+		this.repeats = repeats;
+	}
+	
+	/** Resets the time */
+	public void resetTime() {
+		time = maxTime;
 	}
 	
 	@SuppressWarnings("javadoc")
