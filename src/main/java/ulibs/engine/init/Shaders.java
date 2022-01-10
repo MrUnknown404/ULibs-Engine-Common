@@ -20,7 +20,7 @@ public class Shaders {
 	private static ShaderHudTextureless hudTextureless;
 	
 	private static final Matrix4f WORLD_PR = Matrix4f.orthographic(0f, 16f, 9f, 0f, -1f, 10f);
-	private static final Matrix4f HUD_PR = Matrix4f.orthographic(0f, ClientBase.getHudWidth(), ClientBase.getHudHeight(), 0f, -1f, 10f);
+	private static final Matrix4f HUD_PR = Matrix4f.orthographic(0f, ClientBase.getDefaultWidth(), ClientBase.getDefaultHeight(), 0f, -1f, 10f);
 	
 	public static void registerAll() {
 		Console.print(WarningType.Info, "Started registering " + Shaders.class.getSimpleName() + "!");

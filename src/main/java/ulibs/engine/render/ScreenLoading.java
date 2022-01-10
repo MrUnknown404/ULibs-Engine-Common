@@ -8,6 +8,7 @@ import javax.imageio.ImageIO;
 import main.java.ulibs.engine.ClientBase;
 import main.java.ulibs.engine.init.Shaders;
 import main.java.ulibs.engine.utils.GetResource;
+import main.java.ulibs.engine.utils.ResizeHandler;
 import main.java.ulibs.gl.gl.GLH;
 import main.java.ulibs.gl.gl.QuadData;
 import main.java.ulibs.gl.gl.Texture;
@@ -20,7 +21,8 @@ public class ScreenLoading implements IRenderer {
 	
 	@Override
 	public void setupGL() {
-		va.addVerticesWithDefaults(QuadData.createVertex(0, 0, ZConstant.Z_HUD_BASE, ClientBase.getHudWidth(), ClientBase.getHudHeight()));
+		ResizeHandler rh = ClientBase.getResizeHandler();
+		va.addVerticesWithDefaults(QuadData.createVertex(0, 0, ZConstant.Z_HUD_BASE, rh.getViewportW(), rh.getViewportH()));
 		va.setup();
 	}
 	

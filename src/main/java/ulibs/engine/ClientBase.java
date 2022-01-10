@@ -26,13 +26,12 @@ import main.java.ulibs.engine.render.IRenderer;
 import main.java.ulibs.engine.render.ScreenLoading;
 import main.java.ulibs.engine.utils.EnumScreenTearFix;
 import main.java.ulibs.engine.utils.ITickable;
+import main.java.ulibs.engine.utils.ResizeHandler;
 import main.java.ulibs.gl.gl.GLH;
 import main.java.ulibs.gl.gl.Shader;
 import main.java.ulibs.gl.utils.exceptions.GLException;
 
 public abstract class ClientBase extends CommonBase {
-	private static int hudWidth, hudHeight;
-	
 	/** A {@link Vec2i} for the current mouse position */
 	public static final Vec2i MOUSE_POS = new Vec2i();
 	
@@ -40,11 +39,10 @@ public abstract class ClientBase extends CommonBase {
 	private final IInputHandler<EnumMouseInput> mouseHandler;
 	private final IScrollHandler scrollHandler;
 	
-	private static int aspectWidth, aspectHeight, aspectX, aspectY;
-	private static int lastWidth, lastHeight, windowX, windowY, lastWindowX, lastWindowY;
-	
 	private static long window;
+	private static int lastWidth, lastHeight, windowX, windowY, lastWindowX, lastWindowY;
 	private static boolean isFullscreen;
+	private static int defaultWidth, defaultHeight;
 	
 	private ScreenLoading loadingScreen;
 	
@@ -52,20 +50,20 @@ public abstract class ClientBase extends CommonBase {
 	
 	private final List<IRenderer> renderers = new ArrayList<IRenderer>();
 	private final Supplier<List<Shader>> shadersToSetup;
+	private static ResizeHandler resizeHandler;
 	
-	protected ClientBase(String title, String internalTitle, int hudWidth, int hudHeight, boolean isDebug, int logCount, WarningType[] warnings,
+	protected ClientBase(String title, String internalTitle, int defaultWidth, int defaultHeight, boolean isDebug, int logCount, WarningType[] warnings,
 			Supplier<List<Shader>> shadersToSetup) {
 		super(title, internalTitle, isDebug, logCount, warnings);
 		this.shadersToSetup = shadersToSetup;
 		
-		ClientBase.hudWidth = hudWidth;
-		ClientBase.hudHeight = hudHeight;
-		ClientBase.aspectWidth = hudWidth;
-		ClientBase.aspectHeight = hudHeight;
-		
 		this.keyHandler = setKeyHandler();
 		this.mouseHandler = setMouseHandler();
 		this.scrollHandler = setScrollHandler();
+		
+		ClientBase.defaultWidth = defaultWidth;
+		ClientBase.defaultHeight = defaultHeight;
+		ClientBase.resizeHandler = setResizeHandler();
 		
 		Thread.currentThread().setName("Client");
 	}
@@ -148,13 +146,13 @@ public abstract class ClientBase extends CommonBase {
 		Vec2i monSize = GLH.setWindowHints(true);
 		
 		try {
-			window = GLH.createWindow(title, getHudWidth(), getHudHeight());
+			window = GLH.createWindow(title, defaultWidth, defaultHeight);
 		} catch (GLException e) {
 			return;
 		}
 		
-		windowX = monSize.getX() / 2 - getHudWidth() / 2;
-		windowY = monSize.getY() / 2 - getHudHeight() / 2;
+		windowX = monSize.getX() / 2 - defaultWidth / 2;
+		windowY = monSize.getY() / 2 - defaultHeight / 2;
 		
 		GLH.setWindowPos(window, windowX, windowY);
 		
@@ -229,17 +227,7 @@ public abstract class ClientBase extends CommonBase {
 				}
 				
 				onMouseMoved();
-				
-				switch (getViewportResizeType()) {
-					case scale:
-						float mousePosX = (((float) xpos - getViewportX()) / (getViewportWidth() / getHudWidth()));
-						float mousePosY = (((float) ypos - getViewportY()) / (getViewportHeight() / getHudHeight()));
-						MOUSE_POS.set(Math.round(mousePosX), Math.round(mousePosY));
-						break;
-					case stretch:
-						MOUSE_POS.set((int) Math.round(xpos), (int) Math.round(ypos));
-						break;
-				}
+				MOUSE_POS.set(resizeHandler.setMousePos((int) Math.round(xpos), (int) Math.round(ypos)));
 			}
 		});
 		
@@ -254,30 +242,9 @@ public abstract class ClientBase extends CommonBase {
 		GLFW.glfwSetWindowSizeCallback(window, new GLFWWindowSizeCallbackI() {
 			@Override
 			public void invoke(long window, int width, int height) {
-				switch (getViewportResizeType()) {
-					case scale:
-						aspectWidth = width;
-						aspectHeight = (int) (aspectWidth / (16f / 9f));
-						
-						if (aspectHeight > height) {
-							aspectHeight = height;
-							aspectWidth = (int) (aspectHeight * (16f / 9f));
-						}
-						
-						aspectX = (int) ((width / 2f) - (aspectWidth / 2f));
-						aspectY = (int) ((height / 2f) - (aspectHeight / 2f));
-						
-						GLH.setViewport(aspectX, aspectY, aspectWidth, aspectHeight);
-						break;
-					case stretch:
-						aspectWidth = width;
-						aspectHeight = height;
-						GLH.setViewport(0, 0, aspectWidth, aspectHeight);
-						break;
-				}
+				resizeHandler.onResize(width, height);
 				
-				onResize();
-				for (Shader s : Shaders.getAll()) { //This may cause problems?
+				for (Shader s : Shaders.getAll()) {
 					s.bind();
 					s.onResize();
 				}
@@ -316,10 +283,17 @@ public abstract class ClientBase extends CommonBase {
 		refreshFullscreen();
 	}
 	
-	public static final void refreshFullscreen() {
+	private static final void refreshFullscreen() {
 		if (isFullscreen) {
-			lastWidth = (aspectX * 2) + aspectWidth;
-			lastHeight = (aspectY * 2) + aspectHeight;
+			
+			int viewportX = resizeHandler.getViewportX(), viewportY = resizeHandler.getViewportY();
+			if (resizeHandler.isViewportCentered()) {
+				viewportX *= 2;
+				viewportY *= 2;
+			}
+			
+			lastWidth = viewportX + resizeHandler.getViewportW();
+			lastHeight = viewportY + resizeHandler.getViewportH();
 			lastWindowX = windowX;
 			lastWindowY = windowY;
 			
@@ -349,8 +323,6 @@ public abstract class ClientBase extends CommonBase {
 		ClientBase.screenFix = screenFix;
 	}
 	
-	protected abstract void onResize();
-	
 	protected abstract void onMouseMoved();
 	
 	protected abstract IInputHandler<EnumKeyInput> setKeyHandler();
@@ -359,7 +331,7 @@ public abstract class ClientBase extends CommonBase {
 	
 	protected abstract IScrollHandler setScrollHandler();
 	
-	protected abstract EnumViewportResizeType getViewportResizeType();
+	protected abstract ResizeHandler setResizeHandler();
 	
 	public final IInputHandler<EnumKeyInput> getKeyHandler() {
 		return keyHandler;
@@ -378,32 +350,15 @@ public abstract class ClientBase extends CommonBase {
 		return super.shouldClose() || GLH.shouldWindowClose(window);
 	}
 	
-	public static final int getHudWidth() {
-		return hudWidth;
+	public static int getDefaultWidth() {
+		return defaultWidth;
 	}
 	
-	public static final int getHudHeight() {
-		return hudHeight;
+	public static int getDefaultHeight() {
+		return defaultHeight;
 	}
 	
-	public static final int getViewportX() {
-		return aspectX;
-	}
-	
-	public static final int getViewportY() {
-		return aspectY;
-	}
-	
-	public static final int getViewportWidth() {
-		return aspectWidth;
-	}
-	
-	public static final int getViewportHeight() {
-		return aspectHeight;
-	}
-	
-	protected enum EnumViewportResizeType {
-		scale,
-		stretch;
+	public static ResizeHandler getResizeHandler() {
+		return resizeHandler;
 	}
 }
