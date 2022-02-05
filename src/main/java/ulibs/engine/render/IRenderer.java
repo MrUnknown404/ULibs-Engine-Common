@@ -1,11 +1,17 @@
 package main.java.ulibs.engine.render;
 
+import java.util.Random;
+
 import main.java.ulibs.common.math.Vec2f;
 import main.java.ulibs.common.math.Vec2i;
-import main.java.ulibs.gl.gl.QuadData;
+import main.java.ulibs.gl.gl.VertexArrayData;
 import main.java.ulibs.gl.gl.ZConstant;
+import main.java.ulibs.gl.gl.geometry.Complex;
+import main.java.ulibs.gl.gl.geometry.GeoData;
 
 public interface IRenderer {
+	public static final Random R = new Random();
+	
 	public void setupGL();
 	
 	public void renderPre();
@@ -21,23 +27,23 @@ public interface IRenderer {
 		renderPost();
 	}
 	
-	public default QuadData createLine(Vec2i start, Vec2i end, ZConstant z, float t) {
+	public default VertexArrayData createLine(Vec2i start, Vec2i end, ZConstant z, float t) {
 		return createLine(start.getX(), start.getY(), end.getX(), end.getY(), z, t);
 	}
 	
-	public default QuadData createLine(Vec2f start, Vec2f end, ZConstant z, float t) {
+	public default VertexArrayData createLine(Vec2f start, Vec2f end, ZConstant z, float t) {
 		return createLine(start.getX(), start.getY(), end.getX(), end.getY(), z, t);
 	}
 	
-	public default QuadData createLine(Vec2i start, Vec2f end, ZConstant z, float t) {
+	public default VertexArrayData createLine(Vec2i start, Vec2f end, ZConstant z, float t) {
 		return createLine(start.getX(), start.getY(), end.getX(), end.getY(), z, t);
 	}
 	
-	public default QuadData createLine(Vec2f start, Vec2i end, ZConstant z, float t) {
+	public default VertexArrayData createLine(Vec2f start, Vec2i end, ZConstant z, float t) {
 		return createLine(start.getX(), start.getY(), end.getX(), end.getY(), z, t);
 	}
 	
-	public default QuadData createLine(float startX, float startY, float endX, float endY, ZConstant z, float t) {
+	public default VertexArrayData createLine(float startX, float startY, float endX, float endY, ZConstant z, float t) {
 		float a1 = (float) Math.atan2(endY - startY, endX - startX);
 		float r45 = (float) (45f * Math.PI / 180f);
 		
@@ -53,8 +59,8 @@ public interface IRenderer {
 		float xx6 = (float) (startX + t * Math.cos(a3));
 		float yy6 = (float) (startY + t * Math.sin(a3));
 		
-		float[] vertices = { endX, endY, z.z, xx2, yy2, z.z, xx3, yy3, z.z, startX, startY, z.z, xx5, yy5, z.z, xx6, yy6, z.z };
-		int[] indices = { 0, 1, 2, 3, 4, 5, 1, 2, 4, 4, 5, 1 };
-		return new QuadData().addAll(vertices, indices, QuadData.DEFAULT_TCS);
+		float[] vertices = new float[] { endX, endY, z.z, xx2, yy2, z.z, xx3, yy3, z.z, startX, startY, z.z, xx5, yy5, z.z, xx6, yy6, z.z };
+		int[] indices = new int[] { 0, 1, 2, 3, 4, 5, 1, 2, 4, 4, 5, 1 };
+		return new VertexArrayData().add(new Complex(vertices, indices, GeoData.DEFAULT_TCS));
 	}
 }

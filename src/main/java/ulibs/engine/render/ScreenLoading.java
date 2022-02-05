@@ -10,10 +10,10 @@ import main.java.ulibs.engine.init.Shaders;
 import main.java.ulibs.engine.utils.GetResource;
 import main.java.ulibs.engine.utils.ResizeHandler;
 import main.java.ulibs.gl.gl.GLH;
-import main.java.ulibs.gl.gl.QuadData;
 import main.java.ulibs.gl.gl.Texture;
 import main.java.ulibs.gl.gl.VertexArray;
 import main.java.ulibs.gl.gl.ZConstant;
+import main.java.ulibs.gl.gl.geometry.Quad;
 
 public class ScreenLoading implements IRenderer {
 	private static final Texture LOADING_SCREEN = new Texture(getDefaultTexture());
@@ -22,7 +22,7 @@ public class ScreenLoading implements IRenderer {
 	@Override
 	public void setupGL() {
 		ResizeHandler rh = ClientBase.getResizeHandler();
-		va.addVerticesWithDefaults(QuadData.createVertex(0, 0, ZConstant.Z_HUD_BASE, rh.getViewportW(), rh.getViewportH()));
+		va.add(new Quad(0, 0, rh.getViewportW(), rh.getViewportH(), ZConstant.Z_HUD_BASE));
 		va.setup();
 	}
 	
