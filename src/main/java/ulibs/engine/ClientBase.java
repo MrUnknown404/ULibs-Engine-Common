@@ -39,7 +39,7 @@ public abstract class ClientBase extends CommonBase {
 	private final IInputHandler<EnumMouseInput> mouseHandler;
 	private final IScrollHandler scrollHandler;
 	
-	private static long window;
+	protected static long window;
 	private static int lastWidth, lastHeight, windowX, windowY, lastWindowX, lastWindowY;
 	private static boolean isFullscreen;
 	private static int defaultWidth, defaultHeight;
@@ -69,14 +69,25 @@ public abstract class ClientBase extends CommonBase {
 	}
 	
 	@Override
-	protected final void preRun() {
-		glSetup();
-		loadingScreen = new ScreenLoading();
-		loadingScreen.setupGL();
+	protected final void initWrap() {
+		Console.print(WarningType.Info, "Initialization started...");
+		loadingState++;
+		init();
+		loadingState++;
+		rendererSetup();
+		Console.print(WarningType.Info, "Initialization finished!");
 	}
 	
 	@Override
-	protected final void renderWrap() {
+	protected final boolean preRun() {
+		glSetup();
+		loadingScreen = new ScreenLoading();
+		loadingScreen.setupGL();
+		return true;
+	}
+	
+	@Override
+	protected final void internalRender() {
 		int err = GLH.getError();
 		if (GLH.isError(err)) {
 			Console.print(WarningType.Error, "OpenGL Error: " + err);
@@ -93,17 +104,14 @@ public abstract class ClientBase extends CommonBase {
 		GLH.swapBuffers(window);
 	}
 	
-	@Override
-	protected final void rendererSetup() {
+	private void rendererSetup() {
 		for (IRenderer r : renderers) {
 			r.setupGL();
 		}
 	}
 	
 	@Override
-	protected final void preTick() {
-		tick();
-		
+	protected void tick() {
 		for (IRenderer r : renderers) {
 			if (r instanceof ITickable) {
 				((ITickable) r).tick();
@@ -121,6 +129,10 @@ public abstract class ClientBase extends CommonBase {
 	 * @param r The renderer to add
 	 */
 	protected final void addRenderer(IRenderer r) {
+		if (loadingState != 2) {
+			Console.print(WarningType.Warning, "Added a renderer before or after #init. This could be bad?");
+		}
+		
 		renderers.add(r);
 		Console.print(WarningType.RegisterDebug, "Registered '" + r.getClass().getSimpleName() + "' as a renderer!");
 	}

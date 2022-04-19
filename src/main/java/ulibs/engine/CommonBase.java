@@ -24,9 +24,10 @@ public abstract class CommonBase implements Runnable {
 	
 	private static int fps;
 	private static boolean running = false, isLoading, shouldClose;
-	private static Thread gameThread;
+	private static Thread mainThread;
 	
 	private final List<Timer> timers = new ArrayList<Timer>(), timersToKill = new ArrayList<Timer>();
+	protected int loadingState = 0;
 	
 	protected CommonBase(String title, String internalTitle, boolean isDebug, int logCount, WarningType[] warnings) {
 		CommonBase.isDebug = isDebug;
@@ -42,7 +43,8 @@ public abstract class CommonBase implements Runnable {
 		printJarInfo();
 		
 		Console.print(WarningType.Debug, "Starting threads!");
-		addThreads();
+		createThreads();
+		startThreads();
 		running = true;
 	}
 	
@@ -52,9 +54,13 @@ public abstract class CommonBase implements Runnable {
 	}
 	
 	/** A method for adding any extra threads that may be needed */
-	protected void addThreads() {
-		gameThread = new Thread(this, "Client");
-		gameThread.start();
+	protected void createThreads() {
+		mainThread = new Thread(this, "Client");
+	}
+	
+	/** A method for starting any extra threads that may be needed */
+	protected void startThreads() {
+		mainThread.start();
 	}
 	
 	/** Adds a timer based off the given information to the tick loop. Ticking is handled internally. <br>
@@ -79,8 +85,10 @@ public abstract class CommonBase implements Runnable {
 		timers.add(new Timer(run, timerType, time, repeats));
 	}
 	
-	/** For anything that needs to run before anything else. (Such as OpenGL stuff) */
-	protected abstract void preRun();
+	/** For anything that needs to run before anything else. (Such as OpenGL stuff)
+	 * @return True if everything worked and should continue running the program. False will automatically run {@link System#exit(int)}
+	 */
+	protected abstract boolean preRun();
 	
 	/** First initialization method that'll run. */
 	protected abstract void preInit();
@@ -91,41 +99,43 @@ public abstract class CommonBase implements Runnable {
 	/** Third initialization method that'll run. */
 	protected abstract void postInit();
 	
-	protected abstract void preTick();
-	
 	protected abstract void tick();
 	
-	/** Runs after {@link #init()}. Should be used to setup any renderers */
-	protected abstract void rendererSetup();
-	
-	protected abstract void renderWrap();
+	protected abstract void internalRender();
 	
 	/** @return True of the window should close, otherwise false */
 	protected boolean shouldClose() {
 		return shouldClose;
 	}
 	
-	private void preInitWrap() {
+	/** Should avoid overriding these */
+	protected void preInitWrap() {
 		Console.print(WarningType.Info, "Pre-Initialization started...");
+		loadingState++;
 		preInit();
 		Console.print(WarningType.Info, "Pre-Initialization finished!");
 	}
 	
-	private void initWrap() {
+	/** Should avoid overriding these */
+	protected void initWrap() {
 		Console.print(WarningType.Info, "Initialization started...");
+		loadingState++;
 		init();
-		rendererSetup();
 		Console.print(WarningType.Info, "Initialization finished!");
 	}
 	
-	private void postInitWrap() {
+	/** Should avoid overriding these */
+	protected void postInitWrap() {
 		Console.print(WarningType.Info, "Post-Initialization started...");
+		loadingState++;
 		postInit();
 		Console.print(WarningType.Info, "Post-Initialization finished!");
 	}
 	
-	private void onFinishInitWrap() {
+	/** Should avoid overriding these */
+	protected void onFinishInitWrap() {
 		Console.print(WarningType.Info, "All Initialization has been finished!");
+		loadingState++;
 		onFinishInit();
 	}
 	
@@ -141,10 +151,13 @@ public abstract class CommonBase implements Runnable {
 	
 	@Override
 	public final void run() {
-		preRun();
+		if (!preRun()) {
+			Console.print(WarningType.FatalError, "Pre-Run failed!");
+			System.exit(0);
+		}
 		isLoading = true;
 		
-		Console.print(WarningType.Info, "Started " + gameThread.getName() + "'s run loop!");
+		Console.print(WarningType.Info, "Started " + mainThread.getName() + "'s run loop!");
 		
 		long lastTime = System.nanoTime(), timer = System.currentTimeMillis();
 		double amountOfTicks = 60.0, ns = 1000000000 / amountOfTicks, delta = 0;
@@ -168,34 +181,14 @@ public abstract class CommonBase implements Runnable {
 			
 			while (delta >= 1) {
 				if (!isLoading) {
-					if (!timers.isEmpty()) {
-						for (Timer t : timers) {
-							t.time--;
-							
-							if (t.time <= 0) {
-								if (!t.repeats) {
-									timersToKill.add(t);
-								} else {
-									t.resetTime();
-								}
-								
-								t.runnable.run();
-							}
-						}
-						
-						if (!timersToKill.isEmpty()) {
-							timers.removeAll(timersToKill);
-							timersToKill.clear();
-						}
-					}
-					
-					preTick();
+					timerTick();
+					tick();
 				}
 				
 				delta--;
 			}
 			
-			renderWrap();
+			internalRender();
 			frames++;
 			
 			if (System.currentTimeMillis() - timer > 1000) {
@@ -211,6 +204,29 @@ public abstract class CommonBase implements Runnable {
 				onFinishInitWrap();
 				isLoading = false;
 				ranOnce = true;
+			}
+		}
+	}
+	
+	private void timerTick() {
+		if (!timers.isEmpty()) {
+			for (Timer t : timers) {
+				t.time--;
+				
+				if (t.time <= 0) {
+					if (!t.repeats) {
+						timersToKill.add(t);
+					} else {
+						t.resetTime();
+					}
+					
+					t.runnable.run();
+				}
+			}
+			
+			if (!timersToKill.isEmpty()) {
+				timers.removeAll(timersToKill);
+				timersToKill.clear();
 			}
 		}
 	}
@@ -257,5 +273,9 @@ public abstract class CommonBase implements Runnable {
 	/** @return Returns an integer representing the game's FPS. If this number is lower than 60 problems may occur! */
 	public static final int getFPS() {
 		return fps;
+	}
+	
+	protected static Thread getMainThread() {
+		return mainThread;
 	}
 }
