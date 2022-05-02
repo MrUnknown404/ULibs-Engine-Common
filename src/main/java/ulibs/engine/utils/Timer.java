@@ -9,8 +9,8 @@ import main.java.ulibs.engine.CommonBase;
  * @author -Unknown-
  */
 public class Timer {
-	/** The {@link IRunnable} to run after time's up */
-	public final IRunnable runnable;
+	/** The {@link Runnable} to run after time's up */
+	public final Runnable runnable;
 	/** The type of time unit of measurement to use for this timer */
 	public final TimerType timerType;
 	/** The time to wait until it should run {@link #runnable}'s {@link IRunnable#run()}. <br>
@@ -22,13 +22,13 @@ public class Timer {
 	private final long maxTime;
 	
 	/**
-	 * Should not be constructed by user. See {@link CommonBase#addTimer(IRunnable, TimerType, long, boolean)}!
+	 * Should not be constructed by user. See {@link CommonBase#addTimer(Runnable, TimerType, long, boolean)}!
 	 * @param runnable See {@link #runnable}
 	 * @param timerType See {@link #timerType}
 	 * @param time See {@link #time}
 	 * @param repeats See {@link #repeats}
 	 */
-	public Timer(IRunnable runnable, TimerType timerType, long time, boolean repeats) {
+	public Timer(Runnable runnable, TimerType timerType, long time, boolean repeats) {
 		this.runnable = runnable;
 		this.timerType = timerType;
 		this.maxTime = time;

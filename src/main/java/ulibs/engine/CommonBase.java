@@ -9,7 +9,6 @@ import org.lwjgl.glfw.GLFW;
 import main.java.ulibs.common.utils.Console;
 import main.java.ulibs.common.utils.Console.WarningType;
 import main.java.ulibs.engine.render.IRenderer;
-import main.java.ulibs.engine.utils.IRunnable;
 import main.java.ulibs.engine.utils.Timer;
 import main.java.ulibs.engine.utils.Timer.TimerType;
 
@@ -64,13 +63,13 @@ public abstract class CommonBase implements Runnable {
 	}
 	
 	/** Adds a timer based off the given information to the tick loop. Ticking is handled internally. <br>
-	 * Once the given time has run out it will run the given {@link IRunnable}
-	 * @param run an {@link IRunnable} to run after the given time
+	 * Once the given time has run out it will run the given {@link Runnable}
+	 * @param run an {@link Runnable} to run after the given time
 	 * @param timerType The type of time unit of measurement to use for this timer
-	 * @param time The amount of time to wait to run the given {@link IRunnable}
+	 * @param time The amount of time to wait to run the given {@link Runnable}
 	 * @param repeats Whether or not the timer will repeat. Note that there is no way to remove the timer if this is true
 	 */
-	public final void addTimer(IRunnable run, TimerType timerType, long time, boolean repeats) {
+	public final void addTimer(Runnable run, TimerType timerType, long time, boolean repeats) {
 		switch (timerType) {
 			case minute:
 				time *= 3600;
