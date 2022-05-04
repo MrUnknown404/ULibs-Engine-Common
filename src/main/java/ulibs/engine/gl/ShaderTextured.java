@@ -6,11 +6,11 @@ import main.java.ulibs.common.helpers.ColorH;
 import main.java.ulibs.gl.gl.Shader;
 import main.java.ulibs.gl.math.Matrix4f;
 
-public class ShaderHud extends Shader {
+public class ShaderTextured extends Shader {
 	private Matrix4f lastTrMatrix = Matrix4f.identity();
 	
-	public ShaderHud(Matrix4f prMatrix) {
-		super("hud", "ulibs/engine", prMatrix);
+	public ShaderTextured(Matrix4f prMatrix) {
+		super("textured", "ulibs/engine", prMatrix);
 	}
 	
 	@Override

@@ -6,9 +6,11 @@ import main.java.ulibs.common.helpers.ColorH;
 import main.java.ulibs.gl.gl.Shader;
 import main.java.ulibs.gl.math.Matrix4f;
 
-public class ShaderHudTextureless extends Shader {
-	public ShaderHudTextureless(Matrix4f prMatrix) {
-		super("hud_textureless", "ulibs/engine", prMatrix);
+public class ShaderTextureless extends Shader {
+	private Matrix4f lastTrMatrix = Matrix4f.identity();
+	
+	public ShaderTextureless(Matrix4f prMatrix) {
+		super("textureless", "ulibs/engine", prMatrix);
 	}
 	
 	@Override
@@ -21,10 +23,15 @@ public class ShaderHudTextureless extends Shader {
 	}
 	
 	public void setTransformMatrix(Matrix4f matrix) {
+		lastTrMatrix = matrix;
 		set("transform_matrix", matrix);
 	}
 	
 	public void setColor(Color color) {
 		set("color_vec4", ColorH.colorToVec4(color));
+	}
+	
+	public Matrix4f getLastTransformMatrix() {
+		return lastTrMatrix;
 	}
 }
