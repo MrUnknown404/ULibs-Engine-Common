@@ -13,9 +13,14 @@ import org.lwjgl.glfw.GLFWScrollCallbackI;
 import org.lwjgl.glfw.GLFWWindowPosCallbackI;
 import org.lwjgl.glfw.GLFWWindowSizeCallbackI;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 import main.java.ulibs.common.math.Vec2i;
 import main.java.ulibs.common.utils.Console;
 import main.java.ulibs.common.utils.Console.WarningType;
+import main.java.ulibs.engine.client.ResizeHandler;
+import main.java.ulibs.engine.config.ConfigH;
 import main.java.ulibs.engine.init.Shaders;
 import main.java.ulibs.engine.input.EnumKeyInput;
 import main.java.ulibs.engine.input.EnumMouseInput;
@@ -26,7 +31,6 @@ import main.java.ulibs.engine.render.IRenderer;
 import main.java.ulibs.engine.render.ScreenLoading;
 import main.java.ulibs.engine.utils.EnumScreenTearFix;
 import main.java.ulibs.engine.utils.ITickable;
-import main.java.ulibs.engine.utils.ResizeHandler;
 import main.java.ulibs.gl.gl.GLH;
 import main.java.ulibs.gl.gl.Shader;
 import main.java.ulibs.gl.utils.exceptions.GLException;
@@ -71,9 +75,11 @@ public abstract class ClientBase extends CommonBase {
 	@Override
 	protected final void initWrap() {
 		Console.print(WarningType.Info, "Initialization started...");
-		loadingState++;
+		loadingState = LoadingState.INIT;
 		init();
-		loadingState++;
+		loadingState = LoadingState.CONFIG;
+		ConfigH.loadConfigs();
+		loadingState = LoadingState.RENDERERS;
 		rendererSetup();
 		Console.print(WarningType.Info, "Initialization finished!");
 	}
@@ -93,6 +99,7 @@ public abstract class ClientBase extends CommonBase {
 			Console.print(WarningType.Error, "OpenGL Error: " + err);
 		}
 		
+		GLH.pollEvents();
 		GLH.clearColorDepthBuffer();
 		
 		if (!isLoading()) {
@@ -129,7 +136,7 @@ public abstract class ClientBase extends CommonBase {
 	 * @param r The renderer to add
 	 */
 	protected final void addRenderer(IRenderer r) {
-		if (loadingState != 2) {
+		if (loadingState != LoadingState.INIT) {
 			Console.print(WarningType.Warning, "Added a renderer before or after #init. This could be bad?");
 		}
 		
@@ -272,7 +279,7 @@ public abstract class ClientBase extends CommonBase {
 		
 		GLH.createCapabilities();
 		
-		GLH.setVSync(true);
+		GLH.setVSync(screenFix == EnumScreenTearFix.vsync);
 		GLH.clearColor(new Color(20, 20, 20, 1));
 		GLH.enableDepth();
 		GLH.enableBlend();
@@ -297,7 +304,6 @@ public abstract class ClientBase extends CommonBase {
 	
 	private static final void refreshFullscreen() {
 		if (isFullscreen) {
-			
 			int viewportX = resizeHandler.getViewportX(), viewportY = resizeHandler.getViewportY();
 			if (resizeHandler.isViewportCentered()) {
 				viewportX *= 2;
@@ -335,7 +341,14 @@ public abstract class ClientBase extends CommonBase {
 		ClientBase.screenFix = screenFix;
 	}
 	
-	protected abstract void onMouseMoved();
+	protected void onMouseMoved() {
+		
+	}
+	
+	@Override
+	protected Gson setupGson(GsonBuilder builder) {
+		return builder.setPrettyPrinting().create();
+	}
 	
 	protected abstract IInputHandler<EnumKeyInput> setKeyHandler();
 	

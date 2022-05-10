@@ -4,10 +4,14 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.lwjgl.glfw.GLFW;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import main.java.ulibs.common.utils.Console;
 import main.java.ulibs.common.utils.Console.WarningType;
+import main.java.ulibs.engine.config.ConfigH;
+import main.java.ulibs.engine.registry.IRegistrable;
+import main.java.ulibs.engine.registry.Registry;
 import main.java.ulibs.engine.render.IRenderer;
 import main.java.ulibs.engine.utils.Timer;
 import main.java.ulibs.engine.utils.Timer.TimerType;
@@ -26,7 +30,10 @@ public abstract class CommonBase implements Runnable {
 	private static Thread mainThread;
 	
 	private final List<Timer> timers = new ArrayList<Timer>(), timersToKill = new ArrayList<Timer>();
-	protected int loadingState = 0;
+	private final List<Registry<?>> registries = new ArrayList<Registry<?>>();
+	protected static LoadingState loadingState = LoadingState.NONE;
+	
+	private static Gson gson;
 	
 	protected CommonBase(String title, String internalTitle, boolean isDebug, int logCount, WarningType[] warnings) {
 		CommonBase.isDebug = isDebug;
@@ -41,6 +48,8 @@ public abstract class CommonBase implements Runnable {
 		Console.print(WarningType.Debug, "Jar Location is -> '" + JAR_LOCATION + "'");
 		printJarInfo();
 		
+		gson = setupGson(new GsonBuilder());
+		
 		Console.print(WarningType.Debug, "Starting threads!");
 		createThreads();
 		startThreads();
@@ -49,7 +58,13 @@ public abstract class CommonBase implements Runnable {
 	
 	/** A method for printing any info about the JAR location or any other folders created */
 	protected void printJarInfo() {
-		Console.print(WarningType.Debug, " - Logs Location -> '\\Logs'");
+		Console.print(WarningType.Debug, " - Logs Location ->   '\\Logs'");
+		Console.print(WarningType.Debug, " - Config Location -> '\\Configs'");
+		
+		File f = new File(JAR_LOCATION + "\\Configs");
+		if (!f.exists()) {
+			f.mkdirs();
+		}
 	}
 	
 	/** A method for adding any extra threads that may be needed */
@@ -89,18 +104,23 @@ public abstract class CommonBase implements Runnable {
 	 */
 	protected abstract boolean preRun();
 	
-	/** First initialization method that'll run. */
+	/** First initialization method that'll run.<br>
+	 * Should setup {@link IRegistrable}s here. */
 	protected abstract void preInit();
 	
-	/** Second initialization method that'll run. Should setup {@link IRenderer}s here */
+	/** Second initialization method that'll run. Should setup {@link IRenderer}s here. */
 	protected abstract void init();
 	
-	/** Third initialization method that'll run. */
+	/** Third initialization method that'll run.<br>
+	 *  Configs will be initialized right before this.
+	 */
 	protected abstract void postInit();
 	
 	protected abstract void tick();
 	
 	protected abstract void internalRender();
+	
+	protected abstract Gson setupGson(GsonBuilder builder);
 	
 	/** @return True of the window should close, otherwise false */
 	protected boolean shouldClose() {
@@ -110,23 +130,27 @@ public abstract class CommonBase implements Runnable {
 	/** Should avoid overriding these */
 	protected void preInitWrap() {
 		Console.print(WarningType.Info, "Pre-Initialization started...");
-		loadingState++;
+		loadingState = LoadingState.PRE_INIT;
 		preInit();
+		loadingState = LoadingState.REGISTRIES;
+		setupRegistries();
 		Console.print(WarningType.Info, "Pre-Initialization finished!");
 	}
 	
 	/** Should avoid overriding these */
 	protected void initWrap() {
 		Console.print(WarningType.Info, "Initialization started...");
-		loadingState++;
+		loadingState = LoadingState.INIT;
 		init();
+		loadingState = LoadingState.CONFIG;
+		ConfigH.loadConfigs();
 		Console.print(WarningType.Info, "Initialization finished!");
 	}
 	
 	/** Should avoid overriding these */
 	protected void postInitWrap() {
 		Console.print(WarningType.Info, "Post-Initialization started...");
-		loadingState++;
+		loadingState = LoadingState.POST_INIT;
 		postInit();
 		Console.print(WarningType.Info, "Post-Initialization finished!");
 	}
@@ -134,7 +158,7 @@ public abstract class CommonBase implements Runnable {
 	/** Should avoid overriding these */
 	protected void onFinishInitWrap() {
 		Console.print(WarningType.Info, "All Initialization has been finished!");
-		loadingState++;
+		loadingState = LoadingState.FINISH;
 		onFinishInit();
 	}
 	
@@ -143,9 +167,28 @@ public abstract class CommonBase implements Runnable {
 		
 	}
 	
-	/** Runs right before the game closes. */
+	/** Runs right before the game closes.<br>Note: This does not run if force closed! */
 	protected void onExit() {
 		
+	}
+	
+	protected final void addRegistry(Registry<?> registry) {
+		if (loadingState != LoadingState.PRE_INIT) {
+			Console.print(WarningType.Warning, "Added a registry before or after #preInit. This could be bad?");
+		}
+		
+		registries.add(registry);
+		Console.print(WarningType.RegisterDebug, "Added " + registry.getClass().getSimpleName() + " Registry!");
+	}
+	
+	private void setupRegistries() {
+		Console.print(WarningType.Info, "Starting to register things!");
+		for (Registry<?> r : registries) {
+			Console.print(WarningType.Debug, "Starting registering " + r.getClass().getSimpleName() + " Registry!");
+			r.register();
+			Console.print(WarningType.Debug, "Finished registering " + r.getClass().getSimpleName() + " Registry!");
+		}
+		Console.print(WarningType.Info, "Finished registering things!");
 	}
 	
 	@Override
@@ -161,7 +204,13 @@ public abstract class CommonBase implements Runnable {
 		long lastTime = System.nanoTime(), timer = System.currentTimeMillis();
 		double amountOfTicks = 60.0, ns = 1000000000 / amountOfTicks, delta = 0;
 		int frames = 0;
-		boolean ranOnce = false;
+		
+		internalRender();
+		preInitWrap();
+		initWrap();
+		postInitWrap();
+		onFinishInitWrap();
+		isLoading = false;
 		
 		while (running) {
 			if (shouldClose()) {
@@ -171,8 +220,6 @@ public abstract class CommonBase implements Runnable {
 				System.exit(0);
 				break;
 			}
-			
-			GLFW.glfwPollEvents();
 			
 			long now = System.nanoTime();
 			delta += (now - lastTime) / ns;
@@ -194,15 +241,6 @@ public abstract class CommonBase implements Runnable {
 				timer += 1000;
 				fps = frames;
 				frames = 0;
-			}
-			
-			if (!ranOnce) {
-				preInitWrap();
-				initWrap();
-				postInitWrap();
-				onFinishInitWrap();
-				isLoading = false;
-				ranOnce = true;
 			}
 		}
 	}
@@ -249,6 +287,10 @@ public abstract class CommonBase implements Runnable {
 		return isLoading;
 	}
 	
+	public static final boolean isHappeningAfter(LoadingState isAfter) {
+		return loadingState.ordinal() >= isAfter.ordinal();
+	}
+	
 	/** @return True of the main {@link Thread} is currently running, otherwise false */
 	public static final boolean isRunning() {
 		return running;
@@ -274,7 +316,22 @@ public abstract class CommonBase implements Runnable {
 		return fps;
 	}
 	
+	public static final Gson getGson() {
+		return gson;
+	}
+	
 	protected static Thread getMainThread() {
 		return mainThread;
+	}
+	
+	public enum LoadingState {
+		NONE,
+		PRE_INIT,
+		REGISTRIES,
+		INIT,
+		CONFIG,
+		RENDERERS,
+		POST_INIT,
+		FINISH,;
 	}
 }

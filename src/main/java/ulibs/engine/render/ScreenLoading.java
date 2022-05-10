@@ -6,9 +6,9 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 
 import main.java.ulibs.engine.ClientBase;
+import main.java.ulibs.engine.client.ResizeHandler;
 import main.java.ulibs.engine.init.Shaders;
 import main.java.ulibs.engine.utils.GetResource;
-import main.java.ulibs.engine.utils.ResizeHandler;
 import main.java.ulibs.gl.gl.GLH;
 import main.java.ulibs.gl.gl.Texture;
 import main.java.ulibs.gl.gl.VertexArray;

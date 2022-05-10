@@ -6,10 +6,9 @@ import java.util.List;
 import main.java.ulibs.common.utils.Console;
 import main.java.ulibs.common.utils.Console.WarningType;
 import main.java.ulibs.engine.ClientBase;
-import main.java.ulibs.engine.gl.ShaderTextured;
-import main.java.ulibs.engine.gl.ShaderTextureless;
+import main.java.ulibs.engine.client.gl.ShaderTextured;
+import main.java.ulibs.engine.client.gl.ShaderTextureless;
 import main.java.ulibs.gl.gl.Shader;
-import main.java.ulibs.gl.math.Matrix4f;
 
 public class Shaders {
 	private static final List<Shader> ALL = new ArrayList<Shader>();
@@ -19,15 +18,14 @@ public class Shaders {
 	private static ShaderTextured object;
 	private static ShaderTextureless objectTextureless;
 	
-	private static final Matrix4f WORLD_PR = Matrix4f.orthographic(0f, 16f, 9f, 0f, -1f, 10f);
-	private static final Matrix4f HUD_PR = Matrix4f.orthographic(0f, ClientBase.getDefaultWidth(), ClientBase.getDefaultHeight(), 0f, -1f, 10f);
-	
 	public static void registerAll() {
 		Console.print(WarningType.Info, "Started registering " + Shaders.class.getSimpleName() + "!");
-		hud = add(new ShaderTextured(HUD_PR));
-		hudTextureless = add(new ShaderTextureless(HUD_PR));
-		object = add(new ShaderTextured(WORLD_PR));
-		objectTextureless = add(new ShaderTextureless(WORLD_PR));
+		int w = ClientBase.getDefaultWidth(), h = ClientBase.getDefaultHeight();
+		
+		hud = add(new ShaderTextured(0f, w, 0f, h, -1f, 10f));
+		hudTextureless = add(new ShaderTextureless(0f, w, 0f, h, -1f, 10f));
+		object = add(new ShaderTextured(0f, 16f, 0f, 9f, -1f, 10f));
+		objectTextureless = add(new ShaderTextureless(0f, 16f, 0f, 9f, -1f, 10f));
 		
 		for (Shader s : ALL) {
 			s.setup();

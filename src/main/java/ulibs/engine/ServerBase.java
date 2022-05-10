@@ -5,10 +5,12 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 import main.java.ulibs.common.utils.Console.WarningType;
 
 public abstract class ServerBase extends CommonBase {
-	
 	protected ServerBase(String title, String internalTitle, boolean isDebug, int logCount, WarningType[] warnings) {
 		super(title, internalTitle, isDebug, logCount, warnings);
 	}
@@ -23,7 +25,7 @@ public abstract class ServerBase extends CommonBase {
 			}
 			
 			try { //TODO replace this just a single command instead of making a batch file
-				File batch = new File(title + ".bat");
+				File batch = new File(internalTitle + ".bat");
 				if (!batch.exists()) {
 					batch.createNewFile();
 				}
@@ -51,5 +53,10 @@ public abstract class ServerBase extends CommonBase {
 	@Override
 	protected final void internalRender() {
 		
+	}
+	
+	@Override
+	protected Gson setupGson(GsonBuilder builder) {
+		return builder.create();
 	}
 }

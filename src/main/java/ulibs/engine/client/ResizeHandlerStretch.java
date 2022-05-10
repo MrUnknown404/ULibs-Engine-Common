@@ -1,13 +1,13 @@
-package main.java.ulibs.engine.utils;
+package main.java.ulibs.engine.client;
 
 import main.java.ulibs.common.math.Vec2i;
-import main.java.ulibs.engine.ClientBase;
 import main.java.ulibs.gl.gl.GLH;
 
-public class ResizeHandlerIgnore extends ResizeHandler {
+public class ResizeHandlerStretch extends ResizeHandler {
 	@Override
 	public void onResize(int width, int height) {
-		GLH.setViewport(0, height - ClientBase.getDefaultHeight(), ClientBase.getDefaultWidth(), ClientBase.getDefaultHeight());
+		setViewportSize(width, height);
+		GLH.setViewport(0, 0, width, height);
 	}
 	
 	@Override

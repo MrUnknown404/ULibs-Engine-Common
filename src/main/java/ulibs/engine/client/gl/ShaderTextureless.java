@@ -1,4 +1,4 @@
-package main.java.ulibs.engine.gl;
+package main.java.ulibs.engine.client.gl;
 
 import java.awt.Color;
 
@@ -9,8 +9,8 @@ import main.java.ulibs.gl.math.Matrix4f;
 public class ShaderTextureless extends Shader {
 	private Matrix4f lastTrMatrix = Matrix4f.identity();
 	
-	public ShaderTextureless(Matrix4f prMatrix) {
-		super("textureless", "ulibs/engine", prMatrix);
+	public ShaderTextureless(float left, float right, float bottom, float top, float near, float far) {
+		super("textureless", "ulibs/engine", left, right, bottom, top, near, far);
 	}
 	
 	@Override

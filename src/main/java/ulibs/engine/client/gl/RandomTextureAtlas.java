@@ -1,4 +1,4 @@
-package main.java.ulibs.engine.gl;
+package main.java.ulibs.engine.client.gl;
 
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;

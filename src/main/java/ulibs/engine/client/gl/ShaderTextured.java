@@ -1,4 +1,4 @@
-package main.java.ulibs.engine.gl;
+package main.java.ulibs.engine.client.gl;
 
 import java.awt.Color;
 
@@ -9,8 +9,8 @@ import main.java.ulibs.gl.math.Matrix4f;
 public class ShaderTextured extends Shader {
 	private Matrix4f lastTrMatrix = Matrix4f.identity();
 	
-	public ShaderTextured(Matrix4f prMatrix) {
-		super("textured", "ulibs/engine", prMatrix);
+	public ShaderTextured(float left, float right, float bottom, float top, float near, float far) {
+		super("textured", "ulibs/engine", left, right, bottom, top, near, far);
 	}
 	
 	@Override

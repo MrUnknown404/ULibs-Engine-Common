@@ -1,4 +1,4 @@
-package main.java.ulibs.engine.utils;
+package main.java.ulibs.engine.client;
 
 import main.java.ulibs.common.math.Vec2i;
 import main.java.ulibs.engine.ClientBase;
