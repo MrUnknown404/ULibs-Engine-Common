@@ -214,8 +214,8 @@ public abstract class CommonBase implements Runnable {
 		
 		while (running) {
 			if (shouldClose()) {
-				Console.print(WarningType.Info, "Goodbye!");
 				onExit();
+				Console.print(WarningType.Info, "Goodbye!");
 				running = false;
 				System.exit(0);
 				break;
