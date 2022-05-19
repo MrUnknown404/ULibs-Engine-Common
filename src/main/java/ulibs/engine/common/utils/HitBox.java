@@ -1,4 +1,4 @@
-package main.java.ulibs.engine.utils;
+package main.java.ulibs.engine.common.utils;
 
 import main.java.ulibs.common.math.Vec2f;
 import main.java.ulibs.common.math.Vec2i;

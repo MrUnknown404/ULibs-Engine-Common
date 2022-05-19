@@ -1,4 +1,4 @@
-package main.java.ulibs.engine.config;
+package main.java.ulibs.engine.common.config;
 
 import java.io.File;
 import java.io.FileReader;
@@ -11,8 +11,8 @@ import java.util.function.Consumer;
 
 import main.java.ulibs.common.utils.Console;
 import main.java.ulibs.common.utils.Console.WarningType;
-import main.java.ulibs.engine.CommonBase;
-import main.java.ulibs.engine.CommonBase.LoadingState;
+import main.java.ulibs.engine.common.CommonBase;
+import main.java.ulibs.engine.common.CommonBase.LoadingState;
 
 public class ConfigH {
 	public static final Map<String, ConfigData<?>> DEFAULT_MAP = new HashMap<String, ConfigData<?>>();

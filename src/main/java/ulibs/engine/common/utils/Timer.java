@@ -1,6 +1,6 @@
-package main.java.ulibs.engine.utils;
+package main.java.ulibs.engine.common.utils;
 
-import main.java.ulibs.engine.CommonBase;
+import main.java.ulibs.engine.common.CommonBase;
 
 /**
  * A timer class for allowing code to run after the given {@link #time}. <br>

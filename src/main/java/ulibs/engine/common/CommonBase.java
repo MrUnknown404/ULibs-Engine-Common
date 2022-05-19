@@ -1,4 +1,4 @@
-package main.java.ulibs.engine;
+package main.java.ulibs.engine.common;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -9,12 +9,11 @@ import com.google.gson.GsonBuilder;
 
 import main.java.ulibs.common.utils.Console;
 import main.java.ulibs.common.utils.Console.WarningType;
-import main.java.ulibs.engine.config.ConfigH;
-import main.java.ulibs.engine.registry.IRegistrable;
-import main.java.ulibs.engine.registry.Registry;
-import main.java.ulibs.engine.render.IRenderer;
-import main.java.ulibs.engine.utils.Timer;
-import main.java.ulibs.engine.utils.Timer.TimerType;
+import main.java.ulibs.engine.common.config.ConfigH;
+import main.java.ulibs.engine.common.registry.IRegistrable;
+import main.java.ulibs.engine.common.registry.Registry;
+import main.java.ulibs.engine.common.utils.Timer;
+import main.java.ulibs.engine.common.utils.Timer.TimerType;
 
 public abstract class CommonBase implements Runnable {
 	private static boolean isDebug;
