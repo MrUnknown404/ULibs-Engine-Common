@@ -204,7 +204,6 @@ public abstract class CommonBase implements Runnable {
 		double amountOfTicks = 60.0, ns = 1000000000 / amountOfTicks, delta = 0;
 		int frames = 0;
 		
-		internalRender();
 		preInitWrap();
 		initWrap();
 		postInitWrap();
