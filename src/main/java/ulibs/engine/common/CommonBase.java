@@ -107,7 +107,7 @@ public abstract class CommonBase implements Runnable {
 	 * Should setup {@link IRegistrable}s here. */
 	protected abstract void preInit();
 	
-	/** Second initialization method that'll run. Should setup {@link IRenderer}s here. */
+	/** Second initialization method that'll run. Should setup renderers here. */
 	protected abstract void init();
 	
 	/** Third initialization method that'll run.<br>
