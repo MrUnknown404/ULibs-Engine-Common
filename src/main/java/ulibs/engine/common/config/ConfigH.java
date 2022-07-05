@@ -37,22 +37,17 @@ public class ConfigH {
 			
 			if (!f.exists()) {
 				Console.print(WarningType.Info, "No config named '" + name + "' found! Creating now!");
-				try {
-					FileWriter fw = new FileWriter(f);
+				try (FileWriter fw = new FileWriter(f)) {
 					CommonBase.getGson().toJson(data.defaultConfig, fw);
 					fw.flush();
-					fw.close();
-					
 					data.setConfig(data.defaultConfig);
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
 			}
 			
-			try {
-				FileReader fr = new FileReader(f);
+			try (FileReader fr = new FileReader(f)) {
 				data.setConfig(CommonBase.getGson().fromJson(fr, data.defaultConfig.getClass()));
-				fr.close();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
