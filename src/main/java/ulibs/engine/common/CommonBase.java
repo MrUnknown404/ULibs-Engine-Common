@@ -84,18 +84,11 @@ public abstract class CommonBase implements Runnable {
 	 * @param repeats Whether or not the timer will repeat. Note that there is no way to remove the timer if this is true
 	 */
 	public final void addTimer(Runnable run, TimerType timerType, long time, boolean repeats) {
-		switch (timerType) {
-			case minute:
-				time *= 3600;
-				break;
-			case second:
-				time *= 60;
-				break;
-			case tick:
-				break;
-		}
-		
-		timers.add(new Timer(run, timerType, time, repeats));
+		timers.add(new Timer(run, timerType, switch (timerType) {
+			case minute -> time *= 3600;
+			case second -> time *= 60;
+			case tick -> time;
+		}, repeats));
 	}
 	
 	/** For anything that needs to run before anything else. (Such as OpenGL stuff)
