@@ -4,8 +4,8 @@ import main.java.ulibs.engine.common.CommonBase;
 
 /**
  * A timer class for allowing code to run after the given {@link #time}. <br>
- * Should be used with {@link CommonBase#addTimer(IRunnable, TimerType, long)}. <br>
- * Will run {@link #runnable}'s {@link IRunnable#run()} after the given {@link #time}'s up.
+ * Should be used with {@link CommonBase#addTimer(Runnable, TimerType, long, boolean)}. <br>
+ * Will run {@link #runnable}'s {@link Runnable#run()} after the given {@link #time}'s up.
  * @author -Unknown-
  */
 public class Timer {
@@ -13,7 +13,7 @@ public class Timer {
 	public final Runnable runnable;
 	/** The type of time unit of measurement to use for this timer */
 	public final TimerType timerType;
-	/** The time to wait until it should run {@link #runnable}'s {@link IRunnable#run()}. <br>
+	/** The time to wait until it should run {@link #runnable}'s {@link Runnable#run()}. <br>
 	 * Whether or not this is ticks/seconds/minutes/etc depends on {@link #timerType}! */
 	public long time;
 	/** Whether or not this timer should repeat */
